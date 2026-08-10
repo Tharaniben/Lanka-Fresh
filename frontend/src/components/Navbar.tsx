@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
 
-const links = [
+interface NavLink {
+  to: string;
+  label: string;
+}
+
+const links: NavLink[] = [
   { to: "/", label: "Home" },
   { to: "/products", label: "Products & Inventory" },
   { to: "/cart", label: "Cart & Orders" },

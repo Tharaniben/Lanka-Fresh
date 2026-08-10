@@ -7,7 +7,7 @@ SE2030 Group Project (B7G1-03) — an online grocery store platform.
 | Layer    | Technology                                   |
 |----------|-----------------------------------------------|
 | Backend  | Java 21, Spring Boot 3.5.16, Maven, MySQL     |
-| Frontend | React 19, Vite, React Router, Axios           |
+| Frontend | React 19, TypeScript, Vite, React Router, Axios |
 | Auth     | Clerk                                         |
 
 ## Project structure
@@ -23,10 +23,11 @@ lankafresh/
 │       ├── deliverymanagement/  Delivery Management
 │       ├── complaintrelations/  Complaint & Customer Relations Management
 │       └── salesreporting/      Sales & Business Reporting
-└── frontend/   React (Vite) SPA
+└── frontend/   React + TypeScript (Vite) SPA
     └── src/
         ├── components/   shared UI (navbar, buttons, layout)
-        ├── services/     shared API client (api.js)
+        ├── services/     shared API client (api.ts)
+        ├── types/        shared TypeScript types (ApiError, Page<T>, etc.)
         ├── pages/         top-level pages (home, etc.)
         └── features/
             ├── product-inventory/
@@ -37,10 +38,12 @@ lankafresh/
             └── sales-reporting/
 ```
 
-Each module folder has its own `README.md` describing its scope. Work inside
-your own module folder; shared/common code goes in `components/` or
-`services/` (frontend) or `config/` (backend) — check with the team before
-adding new shared code so we don't duplicate each other's work.
+Each module folder has its own `README.md` describing its scope, and should
+have its own `types.ts` for module-specific types (e.g. `Product`). Only
+promote a type into `src/types/` if more than one module genuinely needs it
+— check with the team first so we don't end up with two different `Product`
+shapes. Work inside your own module folder; shared/common code goes in
+`components/` or `services/` (frontend) or `config/` (backend).
 
 ## Running the backend
 

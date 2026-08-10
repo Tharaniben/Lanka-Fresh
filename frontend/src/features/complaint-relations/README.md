@@ -5,6 +5,5 @@ Scope:
 - Complaint resolution workflow
 - Customer relations / support history
 
-All components, pages, and API calls for this module live in this folder.
-Shared pieces belong in `src/components/`; shared HTTP setup lives in
-`src/services/api.js`.
+Module-specific types go in a `types.ts` file here. Shared UI belongs in
+`src/components/`; shared HTTP setup lives in `src/services/api.ts`.

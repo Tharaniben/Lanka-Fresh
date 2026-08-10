@@ -10,5 +10,7 @@ Scope:
 - Inventory reports
 
 All components, pages, and API calls for this module live in this folder.
-Keep it self-contained — shared pieces (buttons, layout, navbar) belong in
-`src/components/`, and shared HTTP setup lives in `src/services/api.js`.
+Module-specific types (e.g. `Product`) go in a `types.ts` file here — only
+promote a type to `src/types/` if another module genuinely needs it too.
+Shared UI belongs in `src/components/`; shared HTTP setup lives in
+`src/services/api.ts`.
