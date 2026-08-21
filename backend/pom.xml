@@ -64,10 +64,32 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Spring Security — needed for @PreAuthorize and endpoint protection -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- OAuth2 Resource Server — verifies Clerk's JWT against the JWKS URL.
+             This is what lets the backend check "is this token real?" without
+             calling Clerk on every request. It fetches and caches Clerk's public
+             key automatically. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
         <!-- Testing (JUnit 5, Mockito, etc.) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Security test support -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
