@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useAuth, useClerk } from "@clerk/react";
 
 interface NavLink {
   to: string;
@@ -16,6 +17,9 @@ const links: NavLink[] = [
 ];
 
 function Navbar() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const { signOut } = useClerk();
+
   return (
     <nav className="navbar">
       <span className="navbar-brand">LankaFresh</span>
@@ -26,6 +30,19 @@ function Navbar() {
           </li>
         ))}
       </ul>
+      <div className="navbar-auth">
+        {isLoaded && isSignedIn && (
+          <button type="button" onClick={() => signOut({ redirectUrl: "/" })}>
+            Sign out
+          </button>
+        )}
+        {isLoaded && !isSignedIn && (
+          <>
+            <Link to="/sign-in">Sign in</Link>
+            <Link to="/sign-up">Sign up</Link>
+          </>
+        )}
+      </div>
     </nav>
   );
 }

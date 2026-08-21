@@ -12,11 +12,23 @@ const api = axios.create({
   },
 });
 
-// Placeholder for attaching the Clerk session token once auth is wired up:
-// api.interceptors.request.use(async (config) => {
-//   const token = await getToken();
-//   if (token) config.headers.Authorization = `Bearer ${token}`;
-//   return config;
-// });
+// api.ts is a plain module, not a React component, so it can't call
+// useAuth() directly. AuthSync (see src/auth/AuthSync.tsx) calls
+// setTokenGetter() once, near the root of the app, with Clerk's getToken
+// function. Every request then asks for a fresh token before sending.
+type TokenGetter = () => Promise<string | null>;
+let getToken: TokenGetter = async () => null;
+
+export function setTokenGetter(fn: TokenGetter) {
+  getToken = fn;
+}
+
+api.interceptors.request.use(async (config) => {
+  const token = await getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export default api;
