@@ -9,12 +9,8 @@ interface ProtectedRouteProps {
 function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isLoaded, isSignedIn } = useAuth();
 
-  // Wait for Clerk to finish loading before deciding
   if (!isLoaded) return null;
-
-  if (!isSignedIn) {
-    return <Navigate to="/sign-in" replace />;
-  }
+  if (!isSignedIn) return <Navigate to="/sign-in" replace />;
 
   return <>{children}</>;
 }
