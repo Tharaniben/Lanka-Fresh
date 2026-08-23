@@ -9,11 +9,8 @@ interface ProtectedRouteProps {
 function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isLoaded, isSignedIn } = useAuth();
 
-  if (!isLoaded) {
-    // Clerk hasn't finished checking the session yet — avoid a flash
-    // redirect to sign-in while that's in progress.
-    return null;
-  }
+  // Wait for Clerk to finish loading before deciding
+  if (!isLoaded) return null;
 
   if (!isSignedIn) {
     return <Navigate to="/sign-in" replace />;
