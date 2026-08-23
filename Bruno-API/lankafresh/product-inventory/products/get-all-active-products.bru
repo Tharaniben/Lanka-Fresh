@@ -1,0 +1,15 @@
+meta {
+  name: Get All Active Products
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/inventory/products
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

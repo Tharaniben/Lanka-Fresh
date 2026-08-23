@@ -1,0 +1,26 @@
+meta {
+  name: Create Product
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/inventory/products
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Red Apple",
+    "description": "Fresh red apples from local farms",
+    "price": 250.00,
+    "imageUrl": "",
+    "expiryDate": "2026-09-30",
+    "categoryId": 1
+  }
+}
