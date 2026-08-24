@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,17 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Runs after Spring Security has already verified the JWT signature.
- * Its job is to:
- *  1. Read the Clerk user ID ('sub' claim) from the verified JWT
- *  2. Look up (or just-in-time create) the local User row in MySQL
- *  3. Replace the generic JWT authentication with one that carries the
- *     local role (e.g. ROLE_INVENTORY_STAFF) so @PreAuthorize works
- *
- * This filter runs once per request and is registered in SecurityConfig.
- * You never need to call it directly — Spring calls it automatically.
- */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtUserFilter extends OncePerRequestFilter {
@@ -42,31 +33,34 @@ public class JwtUserFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        log.debug("JwtUserFilter running — auth type: {}", auth == null ? "null" : auth.getClass().getSimpleName());
 
         if (auth instanceof JwtAuthenticationToken jwtAuth) {
             Jwt jwt = jwtAuth.getToken();
 
-            // Extract claims from the Clerk JWT
-            String clerkId  = jwt.getSubject();                         // "sub" — always present
-            String email     = jwt.getClaimAsString("email");           // from Clerk session
-            String firstName = jwt.getClaimAsString("first_name");      // from Clerk session
-            String lastName  = jwt.getClaimAsString("last_name");       // from Clerk session
+            String clerkId  = jwt.getSubject();
+            String email    = jwt.getClaimAsString("email");
+            String firstName = jwt.getClaimAsString("first_name");
+            String lastName  = jwt.getClaimAsString("last_name");
 
-            // JIT: find existing user or create a new CUSTOMER row
-            User user = userService.findOrCreate(clerkId, email, firstName, lastName);
+            log.info("JwtUserFilter — clerkId: {}, email: {}, firstName: {}, lastName: {}",
+                    clerkId, email, firstName, lastName);
 
-            // Build a Spring Security authority from the local role
-            // Spring expects "ROLE_" prefix for @PreAuthorize("hasRole('...')")
-            String authority = "ROLE_" + user.getRole().name();
-            List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(authority));
+            try {
+                User user = userService.findOrCreate(clerkId, email, firstName, lastName);
+                log.info("JwtUserFilter — user created/found: id={}, role={}", user.getId(), user.getRole());
 
-            // Replace authentication with one that carries the local role
-            JwtAuthenticationToken enriched = new JwtAuthenticationToken(jwt, authorities);
-            SecurityContextHolder.getContext().setAuthentication(enriched);
+                String authority = "ROLE_" + user.getRole().name();
+                List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(authority));
+                JwtAuthenticationToken enriched = new JwtAuthenticationToken(jwt, authorities);
+                SecurityContextHolder.getContext().setAuthentication(enriched);
+                request.setAttribute("currentUser", user);
 
-            // Store the full User object in the request so controllers can
-            // access it without another DB call: request.getAttribute("currentUser")
-            request.setAttribute("currentUser", user);
+            } catch (Exception e) {
+                log.error("JwtUserFilter — failed to create/find user: {}", e.getMessage(), e);
+            }
+        } else {
+            log.debug("JwtUserFilter — no JWT auth found, skipping");
         }
 
         filterChain.doFilter(request, response);
