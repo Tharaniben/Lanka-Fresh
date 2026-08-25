@@ -3,7 +3,7 @@ import axios from "axios";
 // Base URL for the Spring Boot backend. Override per-machine with a
 // VITE_API_BASE_URL entry in a local .env file (never commit real .env files).
 const baseURL: string =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1";
 
 const api = axios.create({
   baseURL,
