@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import HomePage from "./pages/HomePage";
+import UnauthorizedPage from "./pages/UnauthorizedPage";
 import ProductInventoryPage from "./features/product-inventory/ProductInventoryPage";
 import CartOrderPage from "./features/cart-order/CartOrderPage";
 import SupplierPurchasePage from "./features/supplier-purchase/SupplierPurchasePage";
@@ -26,56 +27,70 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
 
-          {/* Public auth routes */}
+          {/* Public auth & status routes */}
           <Route path="/sign-in" element={<SignInPage />} />
           <Route path="/sign-up" element={<SignUpPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-          {/* Module routes require a signed-in user */}
-          <Route
-            path="/products"
-            element={
-              <ProtectedRoute>
-                <ProductInventoryPage />
-              </ProtectedRoute>
-            }
-          />
+          {/* Products can be browsed publicly or managed by staff */}
+          <Route path="/products" element={<ProductInventoryPage />} />
+
+          {/* Cart & Orders */}
           <Route
             path="/cart"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute
+                allowedRoles={["CUSTOMER", "SALES_STAFF", "BRANCH_MANAGER", "ADMIN"]}
+              >
                 <CartOrderPage />
               </ProtectedRoute>
             }
           />
+
+          {/* Suppliers & Purchases */}
           <Route
             path="/suppliers"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute
+                allowedRoles={["INVENTORY_STAFF", "BRANCH_MANAGER", "ADMIN"]}
+              >
                 <SupplierPurchasePage />
               </ProtectedRoute>
             }
           />
+
+          {/* Delivery Management & Tracking */}
           <Route
             path="/delivery"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute
+                allowedRoles={["CUSTOMER", "DELIVERY_STAFF", "BRANCH_MANAGER", "ADMIN"]}
+              >
                 <DeliveryManagementPage />
               </ProtectedRoute>
             }
           />
+
+          {/* Complaint & Relations */}
           <Route
             path="/complaints"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute
+                allowedRoles={["CUSTOMER", "CRO", "BRANCH_MANAGER", "ADMIN"]}
+              >
                 <ComplaintRelationsPage />
               </ProtectedRoute>
             }
           />
+
+          {/* Sales Reporting */}
           <Route
             path="/reports"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute
+                allowedRoles={["BRANCH_MANAGER", "ADMIN"]}
+              >
                 <SalesReportingPage />
               </ProtectedRoute>
             }

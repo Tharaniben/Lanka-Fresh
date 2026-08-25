@@ -82,55 +82,173 @@ body {
   color: var(--primary);
 }
 
-.auth-page {
-  max-width: 380px;
-  margin: 0 auto;
+/* =========================================================
+   Stitch Auth Design System Components
+   ========================================================= */
+
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  min-height: calc(100vh - 140px);
 }
 
-.auth-page form {
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  padding: 32px 28px;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.auth-brand-icon {
+  font-size: 24px;
+}
+
+.auth-brand-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.01em;
+}
+
+.auth-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 6px;
+}
+
+.auth-header p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.auth-alert-error {
+  background: #fff5f5;
+  border: 1px solid #ffc9c9;
+  color: #c92a2a;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 16px;
 }
 
-.auth-page label {
-  font-size: 14px;
+.form-group label {
+  font-size: 13px;
   font-weight: 600;
-  margin-top: 8px;
+  color: var(--text);
 }
 
-.auth-page input {
-  padding: 10px 12px;
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-group input {
+  padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text);
+  background: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
 }
 
-.auth-page button[type="submit"] {
-  margin-top: 16px;
-  padding: 10px 16px;
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(47, 158, 68, 0.15);
+}
+
+.auth-btn-primary {
+  margin-top: 8px;
+  padding: 11px 16px;
   background: var(--primary);
-  color: white;
+  color: #ffffff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.15s ease;
+  font-family: inherit;
 }
 
-.auth-page button[type="submit"]:disabled {
+.auth-btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.auth-btn-primary:disabled {
   opacity: 0.6;
-  cursor: default;
+  cursor: not-allowed;
 }
 
-.auth-page .link-button {
-  margin-top: 12px;
+.auth-footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.auth-helper-link,
+.auth-inline-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.auth-helper-link:hover,
+.auth-inline-link:hover {
+  text-decoration: underline;
+  color: var(--primary-dark);
+}
+
+.auth-link-button {
   background: none;
   border: none;
   color: var(--primary);
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   padding: 0;
-  font-size: 14px;
+  font-family: inherit;
+}
+
+.auth-link-button:hover {
+  text-decoration: underline;
+  color: var(--primary-dark);
 }
 
 .field-error {
