@@ -1,12 +1,17 @@
 package com.lankafresh.backend.productinventory.repository;
 
-import com.lankafresh.backend.productinventory.model.Stock;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.lankafresh.backend.productinventory.model.Stock;
+
+import jakarta.persistence.LockModeType;
 
 @Repository
 public interface StockRepository extends JpaRepository<Stock, Long> {
@@ -17,6 +22,20 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
      * and by ProductService.toDto() to include quantity in product responses.
      */
     Optional<Stock> findByProductId(Long productId);
+
+    /**
+     * Find stock by product ID and acquire a pessimistic write lock.
+     * Prevents race conditions during concurrent checkouts.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Stock s WHERE s.product.id = :productId")
+    Optional<Stock> findByProductIdForUpdate(@Param("productId") Long productId);
+
+    /**
+     * Fetch stocks for multiple products in one query.
+     * Prevents N+1 query problem.
+     */
+    List<Stock> findByProductIdIn(List<Long> productIds);
 
     /**
      * Find all stock records where quantity is at or below the threshold.

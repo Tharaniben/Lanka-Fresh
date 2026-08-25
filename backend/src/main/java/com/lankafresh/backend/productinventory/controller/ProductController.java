@@ -18,13 +18,14 @@ import java.util.List;
  * REST endpoints for Product management.
  * Base path: /api/v1/inventory/products
  *
- * GET    /api/v1/inventory/products              — active products (customers)
- * GET    /api/v1/inventory/products/all          — all products incl inactive (staff)
- * GET    /api/v1/inventory/products/{id}         — single product
- * GET    /api/v1/inventory/products/category/{id} — products by category
- * POST   /api/v1/inventory/products              — create product (staff only)
- * PUT    /api/v1/inventory/products/{id}         — update product (staff only)
- * DELETE /api/v1/inventory/products/{id}         — deactivate product (staff only)
+ * GET    /api/v1/inventory/products               — active products (customers)
+ * GET    /api/v1/inventory/products/all            — all products incl inactive (staff)
+ * GET    /api/v1/inventory/products/{id}           — single product
+ * GET    /api/v1/inventory/products/category/{id}  — products by category
+ * POST   /api/v1/inventory/products               — create product (staff only)
+ * PUT    /api/v1/inventory/products/{id}           — update product (staff only)
+ * DELETE /api/v1/inventory/products/{id}           — deactivate product (staff only)
+ * PATCH  /api/v1/inventory/products/{id}/reactivate — reactivate product (staff only)
  */
 @RestController
 @RequestMapping("/api/v1/inventory/products")
@@ -33,14 +34,12 @@ public class ProductController extends BaseController {
 
     private final ProductService productService;
 
-    /** Customer-facing product listing — active products only */
     @GetMapping
     public ResponseEntity<ApiResponse<List<ProductResponseDto>>> getAllActiveProducts() {
         return ResponseEntity.ok(ApiResponse.success(
                 productService.getAllActiveProducts()));
     }
 
-    /** Staff view — all products including inactive */
     @GetMapping("/all")
     @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<ProductResponseDto>>> getAllProducts() {
@@ -55,7 +54,6 @@ public class ProductController extends BaseController {
                 productService.getProductById(id)));
     }
 
-    /** Filter active products by category */
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<ApiResponse<List<ProductResponseDto>>> getProductsByCategory(
             @PathVariable Long categoryId) {
@@ -87,5 +85,14 @@ public class ProductController extends BaseController {
             @PathVariable Long id) {
         productService.deactivateProduct(id);
         return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    /** Reactivate a previously deactivated product */
+    @PatchMapping("/{id}/reactivate")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<ProductResponseDto>> reactivateProduct(
+            @PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(
+                productService.reactivateProduct(id)));
     }
 }
