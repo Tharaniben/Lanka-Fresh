@@ -30,7 +30,7 @@ public class StockController extends BaseController {
     private final StockService stockService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<List<StockResponseDto>>> getAllStock() {
         return ResponseEntity.ok(ApiResponse.success(stockService.getAllStock()));
     }
@@ -51,7 +51,7 @@ public class StockController extends BaseController {
      * Returns all products that need restocking.
      */
     @GetMapping("/low-stock")
-    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<List<StockResponseDto>>> getLowStockItems() {
         return ResponseEntity.ok(ApiResponse.success(stockService.getLowStockItems()));
     }
@@ -61,7 +61,7 @@ public class StockController extends BaseController {
      * Staff only — customers cannot update stock.
      */
     @PutMapping("/product/{productId}")
-    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<StockResponseDto>> updateStock(
             @PathVariable Long productId,
             @Valid @RequestBody StockUpdateRequestDto request) {

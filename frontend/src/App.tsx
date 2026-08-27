@@ -41,7 +41,7 @@ function App() {
             path="/cart"
             element={
               <ProtectedRoute
-                allowedRoles={["CUSTOMER", "SALES_STAFF", "BRANCH_MANAGER", "ADMIN"]}
+                allowedRoles={["CUSTOMER", "SALES_STAFF", "BRANCH_MANAGER"]}
               >
                 <CartOrderPage />
               </ProtectedRoute>
@@ -53,7 +53,7 @@ function App() {
             path="/suppliers"
             element={
               <ProtectedRoute
-                allowedRoles={["INVENTORY_STAFF", "BRANCH_MANAGER", "ADMIN"]}
+                allowedRoles={["INVENTORY_STAFF", "BRANCH_MANAGER"]}
               >
                 <SupplierPurchasePage />
               </ProtectedRoute>
@@ -65,7 +65,7 @@ function App() {
             path="/delivery"
             element={
               <ProtectedRoute
-                allowedRoles={["CUSTOMER", "DELIVERY_STAFF", "BRANCH_MANAGER", "ADMIN"]}
+                allowedRoles={["CUSTOMER", "DELIVERY_STAFF", "BRANCH_MANAGER"]}
               >
                 <DeliveryManagementPage />
               </ProtectedRoute>
@@ -77,7 +77,7 @@ function App() {
             path="/complaints"
             element={
               <ProtectedRoute
-                allowedRoles={["CUSTOMER", "CRO", "BRANCH_MANAGER", "ADMIN"]}
+                allowedRoles={["CUSTOMER", "CRO", "BRANCH_MANAGER"]}
               >
                 <ComplaintRelationsPage />
               </ProtectedRoute>
@@ -89,7 +89,7 @@ function App() {
             path="/reports"
             element={
               <ProtectedRoute
-                allowedRoles={["BRANCH_MANAGER", "ADMIN"]}
+                allowedRoles={["BRANCH_MANAGER"]}
               >
                 <SalesReportingPage />
               </ProtectedRoute>

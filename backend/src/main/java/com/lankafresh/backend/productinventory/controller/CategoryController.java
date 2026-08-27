@@ -51,7 +51,7 @@ public class CategoryController extends BaseController {
      * @PreAuthorize checks the role from the local User table (set by JwtUserFilter).
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<CategoryResponseDto>> createCategory(
             @Valid @RequestBody CategoryRequestDto request) {
         CategoryResponseDto created = categoryService.createCategory(request);
@@ -60,7 +60,7 @@ public class CategoryController extends BaseController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<CategoryResponseDto>> updateCategory(
             @PathVariable Long id,
             @Valid @RequestBody CategoryRequestDto request) {
@@ -69,7 +69,7 @@ public class CategoryController extends BaseController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.ok(ApiResponse.success(null));

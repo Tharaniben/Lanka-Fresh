@@ -21,7 +21,7 @@ function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   }
 
   if (allowedRoles && allowedRoles.length > 0) {
-    if (role !== "ADMIN" && !allowedRoles.includes(role)) {
+    if (!allowedRoles.includes(role)) {
       return <Navigate to="/unauthorized" replace />;
     }
   }
