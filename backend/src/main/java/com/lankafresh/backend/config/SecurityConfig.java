@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -40,8 +41,15 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // Allow CORS preflight OPTIONS requests without authentication
-                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
+                // Public browse endpoints for active products & categories (guests / unauthenticated users)
+                .requestMatchers(HttpMethod.GET, "/api/v1/inventory/products").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/inventory/products/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/inventory/products/category/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/inventory/categories").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/inventory/categories/*").permitAll()
+                // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 ->

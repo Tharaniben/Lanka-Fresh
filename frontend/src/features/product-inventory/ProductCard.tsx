@@ -1,9 +1,11 @@
 import { useState } from "react";
 import type { Product } from "./types";
+import { getExpiryStatus } from "./expiryUtils";
 
 interface ProductCardProps {
   product: Product;
   isStaff: boolean;
+  isSignedIn: boolean;
   onAddToCart: (product: Product, quantity: number) => void;
   onEdit: (product: Product) => void;
   onDeactivate: (product: Product) => void;
@@ -13,6 +15,7 @@ interface ProductCardProps {
 function ProductCard({
   product,
   isStaff,
+  isSignedIn,
   onAddToCart,
   onEdit,
   onDeactivate,
@@ -20,9 +23,18 @@ function ProductCard({
 }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const inStock = product.stockQuantity !== null && product.stockQuantity > 0;
+  const expiry = getExpiryStatus(product.expiryDate);
+
+  const cardModifier = !product.active
+    ? "product-card--inactive"
+    : expiry.isExpired && isStaff
+    ? "product-card--expired"
+    : expiry.isExpiringSoon && isStaff
+    ? "product-card--expiring"
+    : "";
 
   return (
-    <div className={`product-card ${!product.active ? "product-card--inactive" : ""}`}>
+    <div className={`product-card ${cardModifier}`}>
       <div className="product-card__image">
         {product.imageUrl ? (
           <img src={product.imageUrl} alt={product.name} />
@@ -41,15 +53,26 @@ function ProductCard({
         <p className={`product-card__stock ${!inStock ? "product-card__stock--out" : ""}`}>
           {inStock ? `In stock: ${product.stockQuantity}` : "Out of stock"}
         </p>
-        {product.expiryDate && (
-          <p className="product-card__expiry">
-            Expires: {new Date(product.expiryDate).toLocaleDateString()}
+
+        {expiry.formattedDate && (
+          <p
+            className={`product-card__expiry ${
+              isStaff && expiry.isExpired
+                ? "product-card__expiry--expired"
+                : isStaff && expiry.isExpiringSoon
+                ? "product-card__expiry--expiring"
+                : ""
+            }`}
+          >
+            Expires: {expiry.formattedDate}
+            {isStaff && expiry.isExpired && " (Expired)"}
+            {isStaff && expiry.isExpiringSoon && ` (${expiry.label})`}
           </p>
         )}
       </div>
 
-      {/* Customer actions — only for active, in-stock products */}
-      {!isStaff && product.active && inStock && (
+      {/* Customer actions — only for logged-in CUSTOMER with active, non-expired, in-stock products */}
+      {isSignedIn && !isStaff && product.active && !expiry.isExpired && inStock && (
         <div className="product-card__actions">
           <div className="product-card__quantity">
             <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} disabled={quantity <= 1}>−</button>
@@ -65,24 +88,41 @@ function ProductCard({
         </div>
       )}
 
-      {/* Staff actions */}
+      {/* Staff actions and status badges */}
       {isStaff && (
         <div className="product-card__staff-actions">
-          {!product.active && (
-            <span className="product-card__badge">Inactive</span>
-          )}
-          <button className="btn-secondary" onClick={() => onEdit(product)}>
-            Edit
-          </button>
-          {product.active ? (
-            <button className="btn-danger" onClick={() => onDeactivate(product)}>
-              Deactivate
+          <div className="product-card__badges">
+            {expiry.isExpired && (
+              <span className="product-card__badge product-card__badge--expired">
+                Expired
+              </span>
+            )}
+            {!expiry.isExpired && expiry.isExpiringSoon && (
+              <span className="product-card__badge product-card__badge--expiring">
+                {expiry.label}
+              </span>
+            )}
+            {!product.active && (
+              <span className="product-card__badge product-card__badge--inactive">
+                Inactive
+              </span>
+            )}
+          </div>
+
+          <div className="product-card__buttons">
+            <button className="btn-secondary" onClick={() => onEdit(product)}>
+              Edit
             </button>
-          ) : (
-            <button className="btn-success" onClick={() => onReactivate(product)}>
-              Reactivate
-            </button>
-          )}
+            {product.active ? (
+              <button className="btn-danger" onClick={() => onDeactivate(product)}>
+                Deactivate
+              </button>
+            ) : (
+              <button className="btn-success" onClick={() => onReactivate(product)}>
+                Reactivate
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

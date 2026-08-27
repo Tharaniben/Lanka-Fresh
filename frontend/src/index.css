@@ -63,7 +63,47 @@ body {
 .navbar-auth {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+}
+
+.navbar-user-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.navbar-username {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.navbar-avatar-icon {
+  font-size: 13px;
+}
+
+.navbar-role-pill {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  background: #e6f4ea;
+  border: 1px solid #b2f2bb;
+  padding: 1px 7px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+}
+
+.navbar-role-pill--customer {
+  color: var(--text-muted);
+  background: #f1f5f9;
+  border-color: #e2e8f0;
 }
 
 .navbar-auth a,
@@ -77,9 +117,21 @@ body {
   font-family: inherit;
 }
 
-.navbar-auth a:hover,
-.navbar-auth button:hover {
+.navbar-auth a:hover {
   color: var(--primary);
+}
+
+.navbar-signout-btn {
+  font-size: 13px !important;
+  color: var(--text-muted) !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.navbar-signout-btn:hover {
+  color: #d92d20 !important;
+  background: #fff5f5 !important;
 }
 
 /* =========================================================

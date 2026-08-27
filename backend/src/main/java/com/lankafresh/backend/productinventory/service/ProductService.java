@@ -1,5 +1,6 @@
 package com.lankafresh.backend.productinventory.service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -25,19 +26,30 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final StockRepository stockRepository;
 
+    /**
+     * Customer listing: Only returns active products whose expiry date
+     * has not yet passed. Expired items are excluded from customers.
+     */
     @Transactional(readOnly = true)
     public List<ProductResponseDto> getAllActiveProducts() {
-        return toDtoList(productRepository.findByActiveTrue());
+        return toDtoList(productRepository.findActiveNonExpired(LocalDate.now()));
     }
 
+    /**
+     * Customer category listing: Only returns active, non-expired products.
+     */
     @Transactional(readOnly = true)
     public List<ProductResponseDto> getProductsByCategory(Long categoryId) {
         if (!categoryRepository.existsById(categoryId)) {
             throw new ResourceNotFoundException("Category not found with id: " + categoryId);
         }
-        return toDtoList(productRepository.findByCategoryIdAndActiveTrue(categoryId));
+        return toDtoList(productRepository.findByCategoryIdAndActiveNonExpired(categoryId, LocalDate.now()));
     }
 
+    /**
+     * Staff & Branch Manager listing: Returns ALL products including
+     * active, inactive, expiring soon, and expired products.
+     */
     @Transactional(readOnly = true)
     public List<ProductResponseDto> getAllProducts() {
         return toDtoList(productRepository.findAll());

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useAuth, useClerk } from "@clerk/react";
+import { useAuth, useClerk, useUser } from "@clerk/react";
 import { useUserRole } from "../auth/useUserRole";
 
 interface NavLink {
@@ -70,11 +70,27 @@ function getNavLinks(isSignedIn: boolean, role: string): NavLink[] {
 }
 
 function Navbar() {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded: isAuthLoaded, isSignedIn } = useAuth();
+  const { user, isLoaded: isUserLoaded } = useUser();
   const { signOut } = useClerk();
-  const { role, isLoading } = useUserRole();
+  const { role, isLoading: isRoleLoading } = useUserRole();
 
   const links = getNavLinks(Boolean(isSignedIn), role);
+  const isReady = isAuthLoaded && isUserLoaded;
+
+  const username =
+    user?.username ||
+    user?.firstName ||
+    user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
+    "User";
+
+  const formattedRole = role
+    ? role
+        .toLowerCase()
+        .split("_")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ")
+    : "";
 
   return (
     <nav className="navbar">
@@ -87,27 +103,36 @@ function Navbar() {
         ))}
       </ul>
       <div className="navbar-auth">
-        {isLoaded && isSignedIn && (
+        {isReady && isSignedIn && (
           <>
-            {!isLoading && (
-              <span
-                style={{
-                  fontSize: "12px",
-                  color: "var(--text-muted)",
-                  padding: "2px 8px",
-                  border: "1px solid var(--border)",
-                  borderRadius: "12px",
-                }}
-              >
-                {role}
+            <div
+              className="navbar-user-info"
+              title={`Logged in as ${username} (${formattedRole})`}
+            >
+              <span className="navbar-username">
+                {username}
               </span>
-            )}
-            <button type="button" onClick={() => signOut({ redirectUrl: "/" })}>
+              {!isRoleLoading && (
+                <span
+                  className={`navbar-role-pill ${
+                    role === "CUSTOMER" ? "navbar-role-pill--customer" : ""
+                  }`}
+                  title={`Role: ${formattedRole}`}
+                >
+                  {formattedRole}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              className="navbar-signout-btn"
+              onClick={() => signOut({ redirectUrl: "/" })}
+            >
               Sign out
             </button>
           </>
         )}
-        {isLoaded && !isSignedIn && (
+        {isReady && !isSignedIn && (
           <>
             <Link to="/sign-in">Sign in</Link>
             <Link to="/sign-up">Sign up</Link>
