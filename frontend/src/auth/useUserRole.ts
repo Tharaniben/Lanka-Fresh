@@ -22,8 +22,7 @@ export type UserRole =
   | "INVENTORY_STAFF"
   | "DELIVERY_STAFF"
   | "CRO"
-  | "BRANCH_MANAGER"
-  | "ADMIN";
+  | "BRANCH_MANAGER";
 
 /**
  * Fetches the current user's role from the LankaFresh backend.

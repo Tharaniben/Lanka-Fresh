@@ -41,7 +41,7 @@ public class ProductController extends BaseController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<List<ProductResponseDto>>> getAllProducts() {
         return ResponseEntity.ok(ApiResponse.success(
                 productService.getAllProducts()));
@@ -62,7 +62,7 @@ public class ProductController extends BaseController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<ProductResponseDto>> createProduct(
             @Valid @RequestBody ProductRequestDto request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -70,7 +70,7 @@ public class ProductController extends BaseController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<ProductResponseDto>> updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody ProductRequestDto request) {
@@ -80,7 +80,7 @@ public class ProductController extends BaseController {
 
     /** Soft delete — sets active=false, preserves order history */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<Void>> deactivateProduct(
             @PathVariable Long id) {
         productService.deactivateProduct(id);
@@ -89,7 +89,7 @@ public class ProductController extends BaseController {
 
     /** Reactivate a previously deactivated product */
     @PatchMapping("/{id}/reactivate")
-    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('INVENTORY_STAFF', 'BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<ProductResponseDto>> reactivateProduct(
             @PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(

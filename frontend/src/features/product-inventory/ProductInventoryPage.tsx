@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@clerk/react";
 import { useUserRole } from "./useUserRole";
 import type { Category, Product } from "./types";
@@ -18,11 +19,12 @@ import CategoryTab from "./CategoryTab";
 import StockTab from "./StockTab";
 import "./ProductInventoryPage.css";
 
-const STAFF_ROLES = ["INVENTORY_STAFF", "BRANCH_MANAGER", "ADMIN"];
+const STAFF_ROLES = ["INVENTORY_STAFF", "BRANCH_MANAGER"];
 type Tab = "products" | "categories" | "stock";
 type StaffFilter = "all" | "expiring_soon" | "expired" | "inactive";
 
 function ProductInventoryPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { isSignedIn, isLoaded: isAuthLoaded } = useAuth();
   const { role: userRole, loading: roleLoading } = useUserRole();
   const isStaff = Boolean(isSignedIn) && STAFF_ROLES.includes(userRole);
@@ -43,6 +45,29 @@ function ProductInventoryPage() {
     }
   }, [isAuthLoaded, isStaff]);
 
+  // Sync category from URL search params (e.g. /products?category=Fruits or /products?category=1)
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    if (!categoryParam) return;
+
+    if (categories.length > 0) {
+      // Check exact ID match first
+      const byId = categories.find((c) => c.id.toString() === categoryParam);
+      if (byId) {
+        setSelectedCategory(byId.id.toString());
+        return;
+      }
+      // Check partial/case-insensitive name match
+      const byName = categories.find((c) =>
+        c.name.toLowerCase().includes(categoryParam.toLowerCase()) ||
+        categoryParam.toLowerCase().includes(c.name.toLowerCase())
+      );
+      if (byName) {
+        setSelectedCategory(byName.id.toString());
+      }
+    }
+  }, [searchParams, categories]);
+
   async function loadData() {
     setLoading(true);
     try {
@@ -57,6 +82,26 @@ function ProductInventoryPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleCategoryChange(newCat: string) {
+    setSelectedCategory(newCat);
+    const nextParams = new URLSearchParams(searchParams);
+    if (newCat === "all") {
+      nextParams.delete("category");
+    } else {
+      nextParams.set("category", newCat);
+    }
+    setSearchParams(nextParams, { replace: true });
+  }
+
+  function handleResetFilters() {
+    setSearchTerm("");
+    setSelectedCategory("all");
+    setStaffFilter("all");
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("category");
+    setSearchParams(nextParams, { replace: true });
   }
 
   if (!isAuthLoaded || (isSignedIn && roleLoading)) {
@@ -242,7 +287,7 @@ function ProductInventoryPage() {
 
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => handleCategoryChange(e.target.value)}
               className="pi-filter-select"
             >
               <option value="all">All categories</option>
@@ -270,11 +315,7 @@ function ProductInventoryPage() {
               <button
                 type="button"
                 className="pi-reset-btn"
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedCategory("all");
-                  setStaffFilter("all");
-                }}
+                onClick={handleResetFilters}
               >
                 Reset filters
               </button>
@@ -289,11 +330,7 @@ function ProductInventoryPage() {
               {hasActiveFilters && (
                 <button
                   className="btn-secondary btn-sm"
-                  onClick={() => {
-                    setSearchTerm("");
-                    setSelectedCategory("all");
-                    setStaffFilter("all");
-                  }}
+                  onClick={handleResetFilters}
                 >
                   Show All Products
                 </button>

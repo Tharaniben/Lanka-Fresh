@@ -63,9 +63,8 @@ Customers shop and track; Sales staff confirm orders and payments; Inventory sta
 | Delivery Staff | View assigned deliveries, update delivery status | `DELIVERY_STAFF` |
 | Customer Relations Officer | Manage complaints and feedback | `CRO` |
 | Branch Manager | Oversee staff, catalogue, cross-module reports | `BRANCH_MANAGER` |
-| Admin | System/user administration (implied by the architecture's 7th user group) | `ADMIN` |
 
-All 7 roles authenticate through **Clerk**. The role itself is stored in our own database, not in Clerk — see [4.4](#44-authentication--authorization-clerk--local-roles) for why.
+All 6 roles authenticate through **Clerk**. The role itself is stored in our own database, not in Clerk — see [4.4](#44-authentication--authorization-clerk--local-roles) for why.
 
 ---
 
@@ -158,14 +157,13 @@ Module folder names use each module's full function name (`productinventory`, `p
 
 ```mermaid
 flowchart TB
-    subgraph Users["7 User Groups"]
+    subgraph Users["6 User Groups"]
         C[Customer]
         SS[Sales Staff]
         IS[Inventory Staff]
         DS[Delivery Staff]
         CR[Customer Relations Officer]
         BM[Branch Manager]
-        AD[Admin]
     end
 
     Users -->|HTTPS, Clerk JWT| APP[Spring Boot App\nJWT verify + local role check]
@@ -194,7 +192,7 @@ Note the dashed lines: Clerk is only involved when a user signs in (frontend tal
 
 ### 4.4 Authentication & Authorization (Clerk + local roles)
 
-- Clerk handles sign-up, login, logout, password reset, and session/JWT issuance for **all 7 roles** — customers and staff both sign in through Clerk, no separate internal auth system.
+- Clerk handles sign-up, login, logout, password reset, and session/JWT issuance for **all 6 roles** — customers and staff both sign in through Clerk, no separate internal auth system.
 - The React app uses **Clerk's React SDK (`@clerk/react`)**, with **custom-built sign-in, sign-up, and forgot-password pages** (using `useSignIn`/`useSignUp`, not Clerk's prebuilt drop-in components) — already built in `frontend/src/auth/`. It attaches the Clerk session JWT to every API call via a shared axios instance (`frontend/src/services/api.ts`).
 - The Spring Boot app verifies the Clerk JWT on every request using Spring Security's OAuth2 Resource Server support, checking the signature against Clerk's public key (JWKS) — **entirely offline, no live call to Clerk per request**.
 - **Role is not stored in Clerk.** It's a `role` column on our own `User` entity (`com.lankafresh.backend.user`), matched to the Clerk user via the verified JWT's `sub` claim. This was a deliberate call over Clerk public metadata — see [4.6](#46-core-data-entities-high-level) and [11](#11-key-decisions-log) for why.

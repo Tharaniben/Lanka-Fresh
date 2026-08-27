@@ -10,15 +10,13 @@ interface NavLink {
 function getNavLinks(isSignedIn: boolean, role: string): NavLink[] {
   if (!isSignedIn) {
     return [
-      { to: "/", label: "Home" },
-      { to: "/products", label: "Products (Browse)" },
+      { to: "/products", label: "Products" },
     ];
   }
 
   switch (role) {
     case "CUSTOMER":
       return [
-        { to: "/", label: "Home" },
         { to: "/products", label: "Products" },
         { to: "/cart", label: "My Cart & Orders" },
         { to: "/delivery", label: "Track Delivery" },
@@ -26,28 +24,23 @@ function getNavLinks(isSignedIn: boolean, role: string): NavLink[] {
       ];
     case "SALES_STAFF":
       return [
-        { to: "/", label: "Home" },
         { to: "/cart", label: "Orders & Payments" },
       ];
     case "INVENTORY_STAFF":
       return [
-        { to: "/", label: "Home" },
         { to: "/products", label: "Products & Inventory" },
         { to: "/suppliers", label: "Suppliers & Purchases" },
       ];
     case "DELIVERY_STAFF":
       return [
-        { to: "/", label: "Home" },
         { to: "/delivery", label: "My Deliveries" },
       ];
     case "CRO":
       return [
-        { to: "/", label: "Home" },
         { to: "/complaints", label: "Complaints & Feedback" },
       ];
     case "BRANCH_MANAGER":
       return [
-        { to: "/", label: "Home" },
         { to: "/reports", label: "Reports & Dashboard" },
         { to: "/products", label: "Products & Inventory" },
         { to: "/cart", label: "Orders" },
@@ -55,16 +48,12 @@ function getNavLinks(isSignedIn: boolean, role: string): NavLink[] {
         { to: "/delivery", label: "Delivery" },
         { to: "/complaints", label: "Complaints" },
       ];
-    case "ADMIN":
     default:
       return [
-        { to: "/", label: "Home" },
-        { to: "/products", label: "Products & Inventory" },
-        { to: "/cart", label: "Cart & Orders" },
-        { to: "/suppliers", label: "Suppliers & Purchases" },
-        { to: "/delivery", label: "Delivery" },
+        { to: "/products", label: "Products" },
+        { to: "/cart", label: "My Cart & Orders" },
+        { to: "/delivery", label: "Track Delivery" },
         { to: "/complaints", label: "Complaints" },
-        { to: "/reports", label: "Reports" },
       ];
   }
 }
@@ -78,11 +67,15 @@ function Navbar() {
   const links = getNavLinks(Boolean(isSignedIn), role);
   const isReady = isAuthLoaded && isUserLoaded;
 
-  const username =
+  const rawUsername =
     user?.username ||
     user?.firstName ||
     user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
     "User";
+
+  // Capitalize first letter of username
+  const username =
+    rawUsername.charAt(0).toUpperCase() + rawUsername.slice(1);
 
   const formattedRole = role
     ? role
@@ -94,7 +87,9 @@ function Navbar() {
 
   return (
     <nav className="navbar">
-      <span className="navbar-brand">LankaFresh</span>
+      <Link to="/" className="navbar-brand">
+        LankaFresh
+      </Link>
       <ul className="navbar-links">
         {links.map((link) => (
           <li key={link.to}>

@@ -20,7 +20,7 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
     return <Navigate to="/sign-in" replace />;
   }
 
-  if (role === "ADMIN" || allowedRoles.includes(role)) {
+  if (allowedRoles.includes(role)) {
     return <>{children}</>;
   }
 
