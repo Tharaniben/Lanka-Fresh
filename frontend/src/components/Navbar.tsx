@@ -47,6 +47,7 @@ function getNavLinks(isSignedIn: boolean, role: string): NavLink[] {
         { to: "/suppliers", label: "Suppliers" },
         { to: "/delivery", label: "Delivery" },
         { to: "/complaints", label: "Complaints" },
+        { to: "/admin/users", label: "User Management" },
       ];
     default:
       return [

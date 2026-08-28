@@ -106,31 +106,31 @@ function HomePage() {
           </p>
         )}
 
-        {/* Dynamic Action Buttons */}
+        {/* Dynamic Action Buttons (Consistent green styling with arrows) */}
         <div className="home-actions">
-          {/* 1. For Guest (Logged out): View Products */}
+          {/* 1. For Guest (Logged out): View Products & Sign In */}
           {isGuest && (
             <>
               <Link to="/products" className="home-btn-primary">
                 View Products →
               </Link>
-              <Link to="/sign-in" className="home-btn-secondary">
-                Sign In / Sign Up
+              <Link to="/sign-in" className="home-btn-primary">
+                Sign In / Sign Up →
               </Link>
             </>
           )}
 
-          {/* 2. For Logged-in Customer: Start Shopping */}
+          {/* 2. For Logged-in Customer: Start Shopping & Order Management */}
           {isCustomer && (
             <>
               <Link to="/products" className="home-btn-primary">
                 Start Shopping →
               </Link>
-              <Link to="/cart" className="home-btn-secondary">
-                My Cart & Orders
+              <Link to="/cart" className="home-btn-primary">
+                My Cart & Orders →
               </Link>
-              <Link to="/delivery" className="home-btn-secondary">
-                Track Delivery
+              <Link to="/delivery" className="home-btn-primary">
+                Track Delivery →
               </Link>
             </>
           )}
@@ -143,8 +143,8 @@ function HomePage() {
                   <Link to="/products" className="home-btn-primary">
                     Manage Products & Stock →
                   </Link>
-                  <Link to="/suppliers" className="home-btn-secondary">
-                    Suppliers & Purchases
+                  <Link to="/suppliers" className="home-btn-primary">
+                    Suppliers & Purchases →
                   </Link>
                 </>
               )}
@@ -172,11 +172,14 @@ function HomePage() {
                   <Link to="/reports" className="home-btn-primary">
                     Reports & Dashboard →
                   </Link>
-                  <Link to="/products" className="home-btn-secondary">
-                    Inventory Overview
+                  <Link to="/admin/users" className="home-btn-primary">
+                    User Management →
                   </Link>
-                  <Link to="/cart" className="home-btn-secondary">
-                    Orders
+                  <Link to="/products" className="home-btn-primary">
+                    Inventory Overview →
+                  </Link>
+                  <Link to="/cart" className="home-btn-primary">
+                    Orders →
                   </Link>
                 </>
               )}
