@@ -1,13 +1,18 @@
 package com.lankafresh.backend.user.service;
 
+import com.lankafresh.backend.config.ResourceNotFoundException;
+import com.lankafresh.backend.user.UserResponseDto;
+import com.lankafresh.backend.user.model.Role;
 import com.lankafresh.backend.user.model.User;
 import com.lankafresh.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
- * Handles just-in-time user provisioning.
+ * Handles just-in-time user provisioning and role management.
  *
  * When someone authenticates for the first time, Clerk knows who they are
  * but our database doesn't have a row for them yet. This service creates
@@ -46,5 +51,28 @@ public class UserService {
     public User getByClerkId(String clerkId) {
         return userRepository.findByClerkId(clerkId)
                 .orElseThrow(() -> new RuntimeException("User not found for clerkId: " + clerkId));
+    }
+
+    /**
+     * All users in the database — accessible by BRANCH_MANAGER for role administration.
+     */
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(UserResponseDto::from)
+                .toList();
+    }
+
+    /**
+     * Updates the role of a user record.
+     */
+    @Transactional
+    public UserResponseDto updateUserRole(Long userId, Role newRole) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with id: " + userId));
+        user.setRole(newRole);
+        return UserResponseDto.from(userRepository.save(user));
     }
 }

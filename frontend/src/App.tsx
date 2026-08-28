@@ -8,6 +8,7 @@ import SupplierPurchasePage from "./features/supplier-purchase/SupplierPurchaseP
 import DeliveryManagementPage from "./features/delivery-management/DeliveryManagementPage";
 import ComplaintRelationsPage from "./features/complaint-relations/ComplaintRelationsPage";
 import SalesReportingPage from "./features/sales-reporting/SalesReportingPage";
+import UserManagementPage from "./features/product-inventory/UserManagementPage";
 import AuthSync from "./auth/AuthSync";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import SignInPage from "./auth/SignInPage";
@@ -92,6 +93,16 @@ function App() {
                 allowedRoles={["BRANCH_MANAGER"]}
               >
                 <SalesReportingPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* User Management (Branch Manager only) */}
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={["BRANCH_MANAGER"]}>
+                <UserManagementPage />
               </ProtectedRoute>
             }
           />
