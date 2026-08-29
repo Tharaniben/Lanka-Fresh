@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@clerk/react";
-import { useUserRole } from "./useUserRole";
+import { useUserRole } from "../../auth/useUserRole";
 import type { Category, Product } from "./types";
 import { getExpiryStatus } from "./expiryUtils";
 import {
