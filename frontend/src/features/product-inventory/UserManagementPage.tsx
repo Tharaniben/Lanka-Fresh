@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { useUserRole } from "./useUserRole";
+import { useUserRole } from "../../auth/useUserRole";
 import api from "../../services/api";
 import {
   getAllUsers,
