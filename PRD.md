@@ -211,7 +211,7 @@ Follow these so the six modules feel like one API, not six different styles:
   { "success": true, "data": { }, "message": null }
   ```
   On error: `{ "success": false, "data": null, "message": "Product not found" }` with an appropriate HTTP status (404, 400, 403, 500).
-- **Pagination** for list endpoints: `?page=0&size=20`, returning `{ "content": [...], "page": 0, "totalPages": n, "totalElements": n }`.
+- **Pagination:** Not required for this prototype. This is a demo project with a small, known dataset — all list endpoints return the full list. If the dataset grows beyond demo scale in a future version, Spring Data's `Pageable` can be added without changing the entity or service layer.
 - **Dates/times:** ISO-8601 strings (`2026-08-16T10:30:00Z`).
 - The frontend's shared `api.ts` doesn't yet unwrap this envelope automatically — whoever builds the first real endpoint should add that handling once, in `services/api.ts`, rather than every module unwrapping it separately.
 - Each module owner writes their own detailed endpoint list and request/response shapes in their own design notes — this PRD gives the shape, not the full spec.
