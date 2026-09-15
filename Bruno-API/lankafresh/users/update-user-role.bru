@@ -1,0 +1,21 @@
+meta {
+  name: Update User Role (Branch Manager)
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/users/1/role
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "role": "INVENTORY_STAFF"
+  }
+}

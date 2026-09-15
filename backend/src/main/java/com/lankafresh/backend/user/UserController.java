@@ -17,9 +17,10 @@ import java.util.List;
  * Endpoints for user management and profile info.
  * Base path: /api/v1/users
  *
- * GET   /api/v1/users/me        — returns the current user's id, email, and role.
- * GET   /api/v1/users           — returns all users (BRANCH_MANAGER only).
- * PATCH /api/v1/users/{id}/role — updates a user's role (BRANCH_MANAGER only).
+ * GET    /api/v1/users/me        — returns the current user's id, email, and role.
+ * GET    /api/v1/users           — returns all users (BRANCH_MANAGER only).
+ * PATCH  /api/v1/users/{id}/role — updates a user's role (BRANCH_MANAGER only).
+ * DELETE /api/v1/users/{id}      — deletes a user record (BRANCH_MANAGER only).
  */
 @RestController
 @RequestMapping("/api/v1/users")
@@ -48,5 +49,15 @@ public class UserController extends BaseController {
             @RequestBody @Valid UserRoleUpdateRequestDto request) {
         return ResponseEntity.ok(
                 ApiResponse.success(userService.updateUserRole(id, request.getRole())));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('BRANCH_MANAGER')")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
+            @PathVariable Long id,
+            HttpServletRequest request) {
+        User currentUser = getCurrentUser(request);
+        userService.deleteUser(id, currentUser.getId());
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

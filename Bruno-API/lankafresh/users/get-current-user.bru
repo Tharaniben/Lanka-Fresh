@@ -1,0 +1,15 @@
+meta {
+  name: Get Current User Profile & Role
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/users/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

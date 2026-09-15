@@ -75,4 +75,19 @@ public class UserService {
         user.setRole(newRole);
         return UserResponseDto.from(userRepository.save(user));
     }
+
+    /**
+     * Deletes a user record by ID.
+     * Prevents self-deletion.
+     */
+    @Transactional
+    public void deleteUser(Long userId, Long currentUserId) {
+        if (userId.equals(currentUserId)) {
+            throw new IllegalArgumentException("Cannot delete your own user account.");
+        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with id: " + userId));
+        userRepository.delete(user);
+    }
 }
