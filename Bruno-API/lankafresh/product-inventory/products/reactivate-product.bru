@@ -1,0 +1,15 @@
+meta {
+  name: Reactivate Product
+  type: http
+  seq: 8
+}
+
+patch {
+  url: {{baseUrl}}/inventory/products/1/reactivate
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

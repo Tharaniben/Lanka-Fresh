@@ -1,0 +1,213 @@
+.home-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 12px 0 40px;
+}
+
+/* ── Hero Section ────────────────────────────────────────── */
+.home-hero {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%, #f7f9ff 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 48px 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.home-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  background: #e6f4ea;
+  border: 1px solid #b2f2bb;
+  color: var(--primary-dark);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.home-staff-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.home-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  max-width: 720px;
+}
+
+.home-description {
+  font-size: 16px;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.home-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.home-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 2px 8px rgba(47, 158, 68, 0.25);
+}
+
+.home-btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.home-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #ffffff;
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.home-btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: var(--primary);
+}
+
+/* ── Features Grid ───────────────────────────────────────── */
+.home-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 20px;
+}
+
+.home-feature-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.home-feature-card:hover {
+  border-color: #b2f2bb;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.home-feature-icon {
+  font-size: 26px;
+  width: 48px;
+  height: 48px;
+  background: #f0fdf4;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-feature-card h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.home-feature-card p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ── Category Pill Preview ───────────────────────────────── */
+.home-categories {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.home-categories h2 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--text);
+}
+
+.home-category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.home-category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.home-category-pill:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: #f0fdf4;
+}
+
+@media (max-width: 640px) {
+  .home-hero {
+    padding: 32px 20px;
+  }
+  .home-title {
+    font-size: 24px;
+  }
+}

@@ -11,6 +11,5 @@ public enum Role {
     INVENTORY_STAFF,
     DELIVERY_STAFF,
     CRO,            // Customer Relations Officer
-    BRANCH_MANAGER,
-    ADMIN
+    BRANCH_MANAGER
 }

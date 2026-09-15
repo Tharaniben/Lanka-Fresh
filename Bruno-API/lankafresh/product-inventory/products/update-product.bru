@@ -1,0 +1,26 @@
+meta {
+  name: Update Product
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/inventory/products/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Red Apple (Imported)",
+    "description": "Premium imported red apples",
+    "price": 350.00,
+    "imageUrl": "",
+    "expiryDate": "2026-09-30",
+    "categoryId": 1
+  }
+}
