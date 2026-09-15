@@ -29,3 +29,7 @@ export async function updateUserRole(
   );
   return res.data.data;
 }
+
+export async function deleteUser(userId: number): Promise<void> {
+  await api.delete(`/users/${userId}`);
+}

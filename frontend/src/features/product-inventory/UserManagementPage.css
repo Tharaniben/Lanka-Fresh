@@ -117,8 +117,14 @@
   border-color: var(--primary);
 }
 
+.um-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .um-save-btn {
-  padding: 6px 16px;
+  padding: 6px 14px;
   font-size: 13px;
   font-weight: 600;
   background: var(--primary);
@@ -135,6 +141,29 @@
 }
 
 .um-save-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.um-delete-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: white;
+  color: #d92d20;
+  border: 1px solid #ffc9c9;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.um-delete-btn:hover:not(:disabled) {
+  background: #fff5f5;
+  border-color: #d92d20;
+}
+
+.um-delete-btn:disabled {
   opacity: 0.5;
   cursor: default;
 }

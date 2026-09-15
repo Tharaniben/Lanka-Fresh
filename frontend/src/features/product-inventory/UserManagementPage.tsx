@@ -5,6 +5,7 @@ import api from "../../services/api";
 import {
   getAllUsers,
   updateUserRole,
+  deleteUser,
   type UserInfo,
 } from "./userManagementService";
 import "./UserManagementPage.css";
@@ -40,6 +41,7 @@ function UserManagementPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<Record<number, string>>({});
   const [saving, setSaving] = useState<Record<number, boolean>>({});
+  const [deleting, setDeleting] = useState<Record<number, boolean>>({});
   const [saveError, setSaveError] = useState<Record<number, string>>({});
   const [saveSuccess, setSaveSuccess] = useState<Record<number, boolean>>({});
 
@@ -117,6 +119,30 @@ function UserManagementPage() {
     }
   }
 
+  async function handleDelete(user: UserInfo) {
+    const name = displayName(user);
+    if (!confirm(`Are you sure you want to delete "${name}"? This will permanently remove the user from the database.`)) {
+      return;
+    }
+
+    setDeleting((prev) => ({ ...prev, [user.id]: true }));
+    setSaveError((prev) => ({ ...prev, [user.id]: "" }));
+
+    try {
+      await deleteUser(user.id);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+    } catch (err: unknown) {
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+      const msg =
+        apiErr?.response?.data?.message ||
+        apiErr?.message ||
+        "Failed to delete user";
+      setSaveError((prev) => ({ ...prev, [user.id]: msg }));
+    } finally {
+      setDeleting((prev) => ({ ...prev, [user.id]: false }));
+    }
+  }
+
   return (
     <div className="um-page">
       <div className="um-header">
@@ -162,6 +188,7 @@ function UserManagementPage() {
                   const isRoleUnchanged =
                     (selectedRoles[user.id] ?? user.role) === user.role;
                   const isSaving = Boolean(saving[user.id]);
+                  const isDeleting = Boolean(deleting[user.id]);
 
                   return (
                     <tr key={user.id}>
@@ -185,7 +212,7 @@ function UserManagementPage() {
                               [user.id]: e.target.value,
                             }))
                           }
-                          disabled={isSelf || isSaving}
+                          disabled={isSelf || isSaving || isDeleting}
                         >
                           {ALL_ROLES.map((r) => (
                             <option key={r} value={r}>
@@ -195,14 +222,27 @@ function UserManagementPage() {
                         </select>
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          className="um-save-btn"
-                          disabled={isSelf || isRoleUnchanged || isSaving}
-                          onClick={() => handleSave(user.id)}
-                        >
-                          {isSaving ? "Saving…" : "Save"}
-                        </button>
+                        <div className="um-action-buttons">
+                          <button
+                            type="button"
+                            className="um-save-btn"
+                            disabled={isSelf || isRoleUnchanged || isSaving || isDeleting}
+                            onClick={() => handleSave(user.id)}
+                          >
+                            {isSaving ? "Saving…" : "Save"}
+                          </button>
+                          {!isSelf && (
+                            <button
+                              type="button"
+                              className="um-delete-btn"
+                              disabled={isSaving || isDeleting}
+                              onClick={() => handleDelete(user)}
+                              title="Delete user from database"
+                            >
+                              {isDeleting ? "Deleting…" : "Delete"}
+                            </button>
+                          )}
+                        </div>
                         {saveSuccess[user.id] && (
                           <div className="um-row-feedback um-row-success">
                             ✓ Saved

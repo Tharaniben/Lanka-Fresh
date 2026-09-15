@@ -39,11 +39,12 @@ function ProductInventoryPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [staffFilter, setStaffFilter] = useState<StaffFilter>("all");
 
+  // Fetch only once after auth and user role are resolved
   useEffect(() => {
-    if (isAuthLoaded) {
+    if (isAuthLoaded && !roleLoading) {
       loadData();
     }
-  }, [isAuthLoaded, isStaff]);
+  }, [isAuthLoaded, roleLoading, isStaff]);
 
   // Sync category from URL search params (e.g. /products?category=Fruits or /products?category=1)
   useEffect(() => {
