@@ -54,6 +54,7 @@ public class SecurityConfig {
             )
             .oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())))
+            // Run AFTER the OAuth2 JWT filter so JwtAuthenticationToken is available
             .addFilterAfter(jwtUserFilter, BearerTokenAuthenticationFilter.class);
 
         return http.build();
