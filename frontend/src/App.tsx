@@ -3,7 +3,7 @@ import Navbar from "./components/Navbar";
 import HomePage from "./pages/HomePage";
 import ProductInventoryPage from "./features/product-inventory/ProductInventoryPage";
 import CartOrderPage from "./features/cart-order/CartOrderPage";
-import SupplierPurchasePage from "./features/supplier-purchase/SupplierPurchasePage";
+import { SupplierPurchasePage } from "./features/supplier-purchase";
 import DeliveryManagementPage from "./features/delivery-management/DeliveryManagementPage";
 import ComplaintRelationsPage from "./features/complaint-relations/ComplaintRelationsPage";
 import SalesReportingPage from "./features/sales-reporting/SalesReportingPage";

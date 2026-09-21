@@ -6,8 +6,8 @@ interface NavLink {
   label: string;
 }
 
-const links: NavLink[] = [
-  { to: "/", label: "Home" },
+// Protected feature routes displayed only to authenticated users
+const protectedLinks: NavLink[] = [
   { to: "/products", label: "Products & Inventory" },
   { to: "/cart", label: "Cart & Orders" },
   { to: "/suppliers", label: "Suppliers & Purchases" },
@@ -22,13 +22,20 @@ function Navbar() {
 
   return (
     <nav className="navbar">
-      <span className="navbar-brand">LankaFresh</span>
+      <span className="navbar-brand">
+        <Link to="/">LankaFresh</Link>
+      </span>
       <ul className="navbar-links">
-        {links.map((link) => (
-          <li key={link.to}>
-            <Link to={link.to}>{link.label}</Link>
-          </li>
-        ))}
+        <li>
+          <Link to="/">Home</Link>
+        </li>
+        {isLoaded &&
+          isSignedIn &&
+          protectedLinks.map((link) => (
+            <li key={link.to}>
+              <Link to={link.to}>{link.label}</Link>
+            </li>
+          ))}
       </ul>
       <div className="navbar-auth">
         {isLoaded && isSignedIn && (
