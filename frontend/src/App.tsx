@@ -16,6 +16,7 @@ import SignUpPage from "./auth/SignUpPage";
 import ForgotPasswordPage from "./auth/ForgotPasswordPage";
 import "./index.css";
 
+
 function App() {
   return (
     <>

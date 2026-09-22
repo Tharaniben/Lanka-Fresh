@@ -6,232 +6,182 @@ import { getAllCategories } from "../features/product-inventory/productService";
 import type { Category } from "../features/product-inventory/types";
 import "./HomePage.css";
 
-function HomePage() {
-  const { isSignedIn, isLoaded: isAuthLoaded } = useAuth();
-  const { user, isLoaded: isUserLoaded } = useUser();
-  const { role, isLoading: isRoleLoading } = useUserRole();
-  const [categories, setCategories] = useState<Category[]>([]);
+export interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl: string;
+}
 
+export default function CartPage() {
+  // Initial cart state loaded from localStorage or mock fallback
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem("lankafresh_cart");
+    return saved ? JSON.parse(saved) : [
+      {
+        id: 1,
+        name: "Fresh Carrots 1kg",
+        price: 350.00,
+        quantity: 2,
+        imageUrl: "https://images.unsplash.com/photo-1598170845058-12ef4a457939?w=500",
+      },
+      {
+        id: 5,
+        name: "Fresh Milk 1L",
+        price: 480.00,
+        quantity: 1,
+        imageUrl: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=500",
+      }
+    ];
+  });
+
+  // Sync cart changes to localStorage
   useEffect(() => {
-    getAllCategories()
-      .then((cats) => setCategories(cats || []))
-      .catch((err) => console.debug("Categories fetch on home:", err));
-  }, []);
+    localStorage.setItem("lankafresh_cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
-  const isReady = isAuthLoaded && isUserLoaded;
+  // 1. UPDATE Quantity (+ / -)
+  const updateQuantity = (id: number, delta: number) => {
+    setCartItems((prev) =>
+      prev
+        .map((item) =>
+          item.id === id ? { ...item, quantity: item.quantity + delta } : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
 
-  const rawUsername =
-    user?.username ||
-    user?.firstName ||
-    user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
-    "User";
+  // 2. DELETE Item
+  const removeItem = (id: number) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
 
-  // Capitalize first letter of username
-  const username =
-    rawUsername.charAt(0).toUpperCase() + rawUsername.slice(1);
+  // 3. CLEAR Cart
+  const clearCart = () => {
+    setCartItems([]);
+  };
 
-  const formattedRole = role
-    ? role
-        .toLowerCase()
-        .split("_")
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(" ")
-    : "";
-
-  const isStaff = Boolean(isSignedIn) && role !== "CUSTOMER";
-  const isCustomer = Boolean(isSignedIn) && role === "CUSTOMER";
-  const isGuest = isReady && !isSignedIn;
-
-  // Fallback category items if none in DB yet
-  const fallbackCategories = [
-    { id: 1, name: "Fresh Vegetables" },
-    { id: 2, name: "Fresh Fruits" },
-    { id: 3, name: "Dairy & Eggs" },
-    { id: 4, name: "Bakery & Pantry" },
-    { id: 5, name: "Herbs & Spices" },
-  ];
-
-  const categoryPills = categories.length > 0 ? categories : fallbackCategories;
+  // 4. CALCULATIONS
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const deliveryFee = subtotal > 3000 || subtotal === 0 ? 0 : 350;
+  const grandTotal = subtotal + deliveryFee;
 
   return (
-    <div className="home-container">
-      {/* ── Hero Section ──────────────────────────────────────── */}
-      <section className="home-hero">
-        <div className="home-badge">
-          🌿 Sri Lanka's Fresh Produce & Daily Supermarket Platform
+    <div className="cart-container p-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-emerald-800">Shopping Cart</h1>
+
+      {cartItems.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+          <p className="text-gray-600 text-lg mb-4">Your shopping cart is empty.</p>
+          <Link
+            to="/products"
+            className="inline-block bg-emerald-600 text-white px-6 py-2 rounded-md hover:bg-emerald-700 transition"
+          >
+            Browse Products
+          </Link>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Cart Items List */}
+          <div className="lg:col-span-2 space-y-4">
+            {cartItems.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between border p-4 rounded-lg bg-white shadow-sm"
+              >
+                <div className="flex items-center gap-4">
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                  <div>
+                    <h3 className="font-semibold text-lg text-gray-800">{item.name}</h3>
+                    <p className="text-sm text-gray-500">
+                      Unit Price: LKR {item.price.toFixed(2)}
+                    </p>
+                    <p className="font-semibold text-emerald-700">
+                      Subtotal: LKR {(item.price * item.quantity).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
 
-        {/* Dynamic Heading based on User Auth / Role */}
-        {isGuest && (
-          <h1 className="home-title">
-            Fresh Fruits, Vegetables & Daily Supermarket Essentials
-          </h1>
-        )}
+                {/* Quantity Controls & Remove Action */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center border rounded bg-gray-50">
+                    <button
+                      onClick={() => updateQuantity(item.id, -1)}
+                      className="px-3 py-1 font-bold text-gray-600 hover:bg-gray-200"
+                    >
+                      -
+                    </button>
+                    <span className="px-3 font-semibold">{item.quantity}</span>
+                    <button
+                      onClick={() => updateQuantity(item.id, 1)}
+                      className="px-3 py-1 font-bold text-gray-600 hover:bg-gray-200"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => removeItem(item.id)}
+                    className="text-red-500 hover:text-red-700 font-semibold text-sm px-2"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
 
-        {isCustomer && (
-          <h1 className="home-title">
-            Welcome to LankaFresh, {username}!
-          </h1>
-        )}
-
-        {isStaff && (
-          <div>
-            <h1 className="home-title">
-              Welcome back, {username}!
-            </h1>
-            {!isRoleLoading && (
-              <span className="home-staff-badge">
-                {formattedRole}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Dynamic Description */}
-        {isGuest && (
-          <p className="home-description">
-            Shop farm-fresh fruits & vegetables sourced directly from certified local growers, alongside your daily groceries, dairy, bakery items, and household essentials delivered fresh to your door.
-          </p>
-        )}
-
-        {isCustomer && (
-          <p className="home-description">
-            Order your everyday groceries, pantry staples, and daily-harvested fruits & vegetables with guaranteed freshness, real-time tracking, and fast doorstep delivery.
-          </p>
-        )}
-
-        {isStaff && (
-          <p className="home-description">
-            Access your operational tools, manage supermarket inventory, oversee customer orders, and track fulfillment in real time.
-          </p>
-        )}
-
-        {/* Dynamic Action Buttons (Consistent green styling with arrows) */}
-        <div className="home-actions">
-          {/* 1. For Guest (Logged out): View Products & Sign In */}
-          {isGuest && (
-            <>
-              <Link to="/products" className="home-btn-primary">
-                View Products →
-              </Link>
-              <Link to="/sign-in" className="home-btn-primary">
-                Sign In / Sign Up →
-              </Link>
-            </>
-          )}
-
-          {/* 2. For Logged-in Customer: Start Shopping & Order Management */}
-          {isCustomer && (
-            <>
-              <Link to="/products" className="home-btn-primary">
-                Start Shopping →
-              </Link>
-              <Link to="/cart" className="home-btn-primary">
-                My Cart & Orders →
-              </Link>
-              <Link to="/delivery" className="home-btn-primary">
-                Track Delivery →
-              </Link>
-            </>
-          )}
-
-          {/* 3. For Logged-in Staff: Role-specific Quick Navigation */}
-          {isStaff && (
-            <>
-              {role === "INVENTORY_STAFF" && (
-                <>
-                  <Link to="/products" className="home-btn-primary">
-                    Manage Products & Stock →
-                  </Link>
-                  <Link to="/suppliers" className="home-btn-primary">
-                    Suppliers & Purchases →
-                  </Link>
-                </>
-              )}
-
-              {role === "SALES_STAFF" && (
-                <Link to="/cart" className="home-btn-primary">
-                  Manage Orders & Payments →
-                </Link>
-              )}
-
-              {role === "DELIVERY_STAFF" && (
-                <Link to="/delivery" className="home-btn-primary">
-                  View Assigned Deliveries →
-                </Link>
-              )}
-
-              {role === "CRO" && (
-                <Link to="/complaints" className="home-btn-primary">
-                  Manage Complaints & Feedback →
-                </Link>
-              )}
-
-              {role === "BRANCH_MANAGER" && (
-                <>
-                  <Link to="/reports" className="home-btn-primary">
-                    Reports & Dashboard →
-                  </Link>
-                  <Link to="/admin/users" className="home-btn-primary">
-                    User Management →
-                  </Link>
-                  <Link to="/products" className="home-btn-primary">
-                    Inventory Overview →
-                  </Link>
-                  <Link to="/cart" className="home-btn-primary">
-                    Orders →
-                  </Link>
-                </>
-              )}
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* ── Grocery Pillars / Feature Cards ────────────────────── */}
-      <section className="home-features">
-        <div className="home-feature-card">
-          <div className="home-feature-icon">🥑</div>
-          <h3>Fresh Fruits & Veggies</h3>
-          <p>Directly sourced from certified local growers with strict freshness standards, alongside all your daily grocery essentials.</p>
-        </div>
-
-        <div className="home-feature-card">
-          <div className="home-feature-icon">⏱️</div>
-          <h3>Expiry Tracked</h3>
-          <p>Real-time perishables and expiry monitoring to guarantee only fresh, safe items reach your home.</p>
-        </div>
-
-        <div className="home-feature-card">
-          <div className="home-feature-icon">🚚</div>
-          <h3>Fast Delivery</h3>
-          <p>Reliable door-to-door delivery with live tracking for all your daily grocery & supermarket orders.</p>
-        </div>
-
-        <div className="home-feature-card">
-          <div className="home-feature-icon">🛡️</div>
-          <h3>Fair & Transparent</h3>
-          <p>Direct marketplace pricing, transparent stock availability, and dedicated customer support.</p>
-        </div>
-      </section>
-
-      {/* ── Functional Category Quick Links (Clean text only) ───── */}
-      <section className="home-categories">
-        <h2>Explore by Category</h2>
-        <div className="home-category-list">
-          {categoryPills.map((cat) => (
-            <Link
-              key={cat.id}
-              to={`/products?category=${encodeURIComponent(cat.name)}`}
-              className="home-category-pill"
+            <button
+              onClick={clearCart}
+              className="text-sm text-red-600 hover:underline font-medium mt-2"
             >
-              {cat.name}
-            </Link>
-          ))}
+              Clear Entire Cart
+            </button>
+          </div>
+
+          {/* Checkout & Summary Card */}
+          <div className="border p-6 rounded-lg bg-white shadow-sm h-fit">
+            <h2 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">
+              Order Summary
+            </h2>
+            <div className="space-y-3 text-gray-700">
+              <div className="flex justify-between">
+                <span>Items Subtotal:</span>
+                <span className="font-medium">LKR {subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Delivery Fee:</span>
+                <span className="font-medium">
+                  {deliveryFee === 0 ? "FREE" : `LKR ${deliveryFee.toFixed(2)}`}
+                </span>
+              </div>
+              {subtotal < 3000 && subtotal > 0 && (
+                <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                  Add LKR {(3000 - subtotal).toFixed(2)} more for FREE delivery!
+                </p>
+              )}
+              <hr />
+              <div className="flex justify-between text-lg font-bold text-gray-900 pt-1">
+                <span>Grand Total:</span>
+                <span className="text-emerald-700">LKR {grandTotal.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => alert("Proceeding to checkout...")}
+              className="w-full mt-6 bg-emerald-600 text-white py-3 rounded-md font-semibold hover:bg-emerald-700 transition"
+            >
+              Proceed to Checkout →
+            </button>
+          </div>
         </div>
-      </section>
+      )}
     </div>
   );
 }
-
-export default HomePage;

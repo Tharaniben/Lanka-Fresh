@@ -50,6 +50,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.error(ex.getMessage()));
     }
+        // 400 — bad request / invalid state, e.g. checking out an empty cart
+    @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
+    public ResponseEntity<ApiResponse<Void>> handleBadRequest(RuntimeException ex) {
+        return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
+    }
 
     // 500 — any other unexpected exception
     @ExceptionHandler(Exception.class)
