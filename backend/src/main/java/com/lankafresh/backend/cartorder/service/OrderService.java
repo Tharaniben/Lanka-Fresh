@@ -3,6 +3,7 @@ package com.lankafresh.backend.cartorder.service;
 import com.lankafresh.backend.cartorder.model.*;
 import com.lankafresh.backend.cartorder.repository.CartItemRepository;
 import com.lankafresh.backend.cartorder.repository.OrderRepository;
+import com.lankafresh.backend.cartorder.repository.PaymentRepository;
 import com.lankafresh.backend.config.ResourceNotFoundException;
 import com.lankafresh.backend.productinventory.service.ProductService;
 import com.lankafresh.backend.user.model.User;
@@ -22,22 +23,27 @@ public class OrderService {
     private final UserRepository userRepository;
     private final CartService cartService;
     private final ProductService productService;
+    private final PaymentService paymentService;
+    private final PaymentRepository paymentRepository;
 
     public OrderService(OrderRepository orderRepository,
                          CartItemRepository cartItemRepository,
                          UserRepository userRepository,
                          CartService cartService,
-                         ProductService productService) {
+                         ProductService productService,
+                         PaymentService paymentService,
+                         PaymentRepository paymentRepository) {
         this.orderRepository = orderRepository;
         this.cartItemRepository = cartItemRepository;
         this.userRepository = userRepository;
         this.cartService = cartService;
         this.productService = productService;
+        this.paymentService = paymentService;
+        this.paymentRepository = paymentRepository;
     }
 
-    // CREATE: turn the current cart into a placed order, then empty the cart
     @Transactional
-    public OrderResponseDto checkout(Long userId, String deliveryAddress) {
+    public OrderResponseDto checkout(Long userId, CheckoutRequestDto body) {
         Cart cart = cartService.getOrCreateCart(userId);
         List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
 
@@ -62,24 +68,29 @@ public class OrderService {
 
         BigDecimal grandTotal = subtotal.add(deliveryFee);
 
-        Order order = new Order(user, deliveryAddress, subtotal, deliveryFee, grandTotal);
+        Payment payment = paymentService.process(grandTotal, "CARD", body.getCardNumber());
+        if (payment.getStatus() == PaymentStatus.FAILED) {
+            throw new IllegalStateException(
+                    "Payment declined. Please check your card details and try again.");
+        }
+
+        Order order = new Order(user, body.getDeliveryAddress(), subtotal, deliveryFee, grandTotal);
         for (CartItem cartItem : cartItems) {
             order.addItem(new OrderItem(
-                    cartItem.getProduct(),
-                    cartItem.getProduct().getName(),
-                    cartItem.getProduct().getPrice(),
-                    cartItem.getQuantity()
+                    cartItem.getProduct(), cartItem.getProduct().getName(),
+                    cartItem.getProduct().getPrice(), cartItem.getQuantity()
             ));
         }
 
-        Order saved = orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        payment.setOrder(savedOrder);
+        Payment savedPayment = paymentRepository.save(payment);
 
         cartItemRepository.deleteByCartId(cart.getId());
 
-        return OrderResponseDto.from(saved);
+        return OrderResponseDto.from(savedOrder, savedPayment);
     }
 
-    // READ: this user's past orders, most recent first
     @Transactional
     public List<OrderResponseDto> getOrderHistory(Long userId) {
         return orderRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
@@ -87,7 +98,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // READ: a single order, only if it belongs to this user
     @Transactional
     public OrderResponseDto getOrderById(Long userId, Long orderId) {
         Order order = orderRepository.findById(orderId)

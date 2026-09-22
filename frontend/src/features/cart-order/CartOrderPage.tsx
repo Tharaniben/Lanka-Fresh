@@ -29,6 +29,10 @@ function CartOrderPage() {
 
   const [showCheckout, setShowCheckout] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardHolderName, setCardHolderName] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [cvv, setCvv] = useState("");
   const [placingOrder, setPlacingOrder] = useState(false);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
 
@@ -126,17 +130,28 @@ function CartOrderPage() {
 
   // -- Checkout flow --
   async function handlePlaceOrder() {
-    if (!deliveryAddress.trim()) {
-      setActionError("Please enter a delivery address.");
+    if (!deliveryAddress.trim() || !cardNumber.trim() || !cardHolderName.trim() ||
+        !expiryDate.trim() || !cvv.trim()) {
+      setActionError("Please fill in the delivery address and all card details.");
       return;
     }
     setPlacingOrder(true);
     setActionError(null);
     try {
-      const order = await checkout(deliveryAddress.trim());
+      const order = await checkout({
+        deliveryAddress: deliveryAddress.trim(),
+        cardNumber: cardNumber.trim(),
+        cardHolderName: cardHolderName.trim(),
+        expiryDate: expiryDate.trim(),
+        cvv: cvv.trim(),
+      });
       setLastOrder(order);
       setShowCheckout(false);
       setDeliveryAddress("");
+      setCardNumber("");
+      setCardHolderName("");
+      setExpiryDate("");
+      setCvv("");
       const refreshedCart = await getMyCart(); // now empty
       setCart(refreshedCart);
     } catch (err) {
@@ -182,6 +197,9 @@ function CartOrderPage() {
       {lastOrder && tab === "cart" && (
         <div className="co-success-banner">
           Order #{lastOrder.id} placed! Grand total {money(lastOrder.grandTotal)}.{" "}
+          {lastOrder.paymentTransactionId && (
+            <>Payment ref: {lastOrder.paymentTransactionId}.{" "}</>
+          )}
           <button className="co-link-btn" onClick={openOrdersTab}>
             View my orders
           </button>
@@ -276,6 +294,52 @@ function CartOrderPage() {
                       placeholder="House no, street, city"
                       rows={3}
                     />
+
+                    <label htmlFor="cardNumber">Card Number</label>
+                    <input
+                      id="cardNumber"
+                      type="text"
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(e.target.value)}
+                      placeholder="4111 1111 1111 1111"
+                    />
+                    <p className="co-muted co-hint">
+                      Mock payment only -- no real card is charged. Tip: end the number
+                      with 0000 to test a declined payment.
+                    </p>
+
+                    <label htmlFor="cardHolderName">Name on Card</label>
+                    <input
+                      id="cardHolderName"
+                      type="text"
+                      value={cardHolderName}
+                      onChange={(e) => setCardHolderName(e.target.value)}
+                      placeholder="As shown on card"
+                    />
+
+                    <div className="co-card-row">
+                      <div>
+                        <label htmlFor="expiryDate">Expiry (MM/YY)</label>
+                        <input
+                          id="expiryDate"
+                          type="text"
+                          value={expiryDate}
+                          onChange={(e) => setExpiryDate(e.target.value)}
+                          placeholder="12/28"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="cvv">CVV</label>
+                        <input
+                          id="cvv"
+                          type="text"
+                          value={cvv}
+                          onChange={(e) => setCvv(e.target.value)}
+                          placeholder="123"
+                        />
+                      </div>
+                    </div>
+
                     <div className="co-checkout-actions">
                       <button
                         className="co-btn co-checkout-btn"
