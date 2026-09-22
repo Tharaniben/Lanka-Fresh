@@ -4,6 +4,7 @@ import com.lankafresh.backend.cartorder.model.*;
 import com.lankafresh.backend.cartorder.repository.CartItemRepository;
 import com.lankafresh.backend.cartorder.repository.OrderRepository;
 import com.lankafresh.backend.config.ResourceNotFoundException;
+import com.lankafresh.backend.productinventory.service.ProductService;
 import com.lankafresh.backend.user.model.User;
 import com.lankafresh.backend.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -20,15 +21,18 @@ public class OrderService {
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
     private final CartService cartService;
+    private final ProductService productService;
 
     public OrderService(OrderRepository orderRepository,
                          CartItemRepository cartItemRepository,
                          UserRepository userRepository,
-                         CartService cartService) {
+                         CartService cartService,
+                         ProductService productService) {
         this.orderRepository = orderRepository;
         this.cartItemRepository = cartItemRepository;
         this.userRepository = userRepository;
         this.cartService = cartService;
+        this.productService = productService;
     }
 
     // CREATE: turn the current cart into a placed order, then empty the cart
@@ -43,6 +47,10 @@ public class OrderService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        for (CartItem cartItem : cartItems) {
+            productService.decrementStock(cartItem.getProduct().getId(), cartItem.getQuantity());
+        }
 
         BigDecimal subtotal = cartItems.stream()
                 .map(ci -> ci.getProduct().getPrice().multiply(BigDecimal.valueOf(ci.getQuantity())))
@@ -66,7 +74,6 @@ public class OrderService {
 
         Order saved = orderRepository.save(order);
 
-        // Order is placed -- empty the cart so it doesn't get checked out twice.
         cartItemRepository.deleteByCartId(cart.getId());
 
         return OrderResponseDto.from(saved);
