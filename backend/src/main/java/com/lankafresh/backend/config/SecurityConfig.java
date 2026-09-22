@@ -40,6 +40,8 @@ public class SecurityConfig {
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Allow root URL access without JWT authentication
+                .requestMatchers("/").permitAll()
                 // Allow CORS preflight OPTIONS requests without authentication
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
