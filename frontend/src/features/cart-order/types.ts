@@ -42,6 +42,16 @@ export interface Order {
   grandTotal: number;
   status: OrderStatus;
   createdAt: string;
+  paymentTransactionId?: string | null;
+  paymentStatus?: "SUCCESS" | "FAILED" | null;
+}
+
+export interface CheckoutPayload {
+  deliveryAddress: string;
+  cardNumber: string;
+  cardHolderName: string;
+  expiryDate: string;
+  cvv: string;
 }
 
 export interface ApiResponse<T> {

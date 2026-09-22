@@ -19,17 +19,26 @@ public class OrderResponseDto {
     private BigDecimal grandTotal;
     private OrderStatus status;
     private Instant createdAt;
+    private String paymentTransactionId;
+    private PaymentStatus paymentStatus;
+
+    public static OrderResponseDto from(Order order, Payment payment) {
+        return new OrderResponseDto(
+                order.getId(), order.getDeliveryAddress(),
+                order.getItems().stream().map(OrderItemResponseDto::from).collect(Collectors.toList()),
+                order.getSubtotal(), order.getDeliveryFee(), order.getGrandTotal(),
+                order.getStatus(), order.getCreatedAt(),
+                payment.getTransactionId(), payment.getStatus()
+        );
+    }
 
     public static OrderResponseDto from(Order order) {
         return new OrderResponseDto(
-                order.getId(),
-                order.getDeliveryAddress(),
+                order.getId(), order.getDeliveryAddress(),
                 order.getItems().stream().map(OrderItemResponseDto::from).collect(Collectors.toList()),
-                order.getSubtotal(),
-                order.getDeliveryFee(),
-                order.getGrandTotal(),
-                order.getStatus(),
-                order.getCreatedAt()
+                order.getSubtotal(), order.getDeliveryFee(), order.getGrandTotal(),
+                order.getStatus(), order.getCreatedAt(),
+                null, null
         );
     }
 }

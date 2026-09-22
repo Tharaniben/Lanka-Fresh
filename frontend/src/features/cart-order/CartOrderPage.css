@@ -186,11 +186,27 @@
 
 .co-checkout-form label { font-size: 13px; color: var(--text-muted); }
 .co-checkout-form textarea {
+  .co-checkout-form label { font-size: 13px; color: var(--text-muted); }
+.co-checkout-form textarea,
+.co-checkout-form input {
   padding: 8px;
   border: 1px solid var(--border);
   border-radius: 6px;
   font: inherit;
   resize: vertical;
+}
+
+.co-hint { font-size: 12px; margin-top: -2px; }
+
+.co-card-row {
+  display: flex;
+  gap: 10px;
+}
+.co-card-row > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .co-checkout-actions {

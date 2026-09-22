@@ -35,7 +35,7 @@ public class OrderController extends BaseController {
             HttpServletRequest request,
             @Valid @RequestBody CheckoutRequestDto body) {
         User user = getCurrentUser(request);
-        OrderResponseDto order = orderService.checkout(user.getId(), body.getDeliveryAddress());
+        OrderResponseDto order = orderService.checkout(user.getId(), body);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(order));
     }
 
