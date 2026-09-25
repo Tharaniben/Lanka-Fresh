@@ -1,0 +1,15 @@
+meta {
+  name: Get Category By ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/inventory/categories/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
