@@ -49,6 +49,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/inventory/products/category/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/inventory/categories").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/inventory/categories/*").permitAll()
+                // Allow read-only reports for authorized frontend app
+                .requestMatchers(HttpMethod.GET, "/api/v1/reports/**").permitAll()
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
