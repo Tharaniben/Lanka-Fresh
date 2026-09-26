@@ -1,13 +1,8 @@
-// All API calls for the Order module (checkout + order history).
-// Uses the shared axios instance from src/services/api.ts.
-
 import api from "../../services/api";
-import type { ApiResponse, Order } from "./types";
+import type { ApiResponse, Order, CheckoutPayload } from "./types";
 
-export async function checkout(deliveryAddress: string): Promise<Order> {
-  const res = await api.post<ApiResponse<Order>>("/orders/checkout", {
-    deliveryAddress,
-  });
+export async function checkout(payload: CheckoutPayload): Promise<Order> {
+  const res = await api.post<ApiResponse<Order>>("/orders/checkout", payload);
   return res.data.data;
 }
 
