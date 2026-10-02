@@ -1,0 +1,42 @@
+.delivery-tracking-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  background: var(--bg);
+}
+
+.delivery-tracking-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.delivery-tracking-card__header h3 {
+  margin: 0;
+  color: var(--text);
+}
+
+.delivery-tracking-card__address {
+  color: var(--text);
+  margin: 0.5rem 0 0;
+}
+
+.delivery-tracking-card__coords {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
+.delivery-tracking-card__mock-note {
+  font-style: italic;
+}
+
+.delivery-tracking-card__updated {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 0.5rem 0 0;
+}
+
+.delivery-tracking-card__error {
+  color: #b91c1c;
+}
