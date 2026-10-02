@@ -1,0 +1,95 @@
+.all-deliveries h2 {
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+
+.all-deliveries__empty {
+  color: var(--text-muted);
+}
+
+.all-deliveries__error {
+  color: #b91c1c;
+}
+
+.all-deliveries__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.all-deliveries__table th,
+.all-deliveries__table td {
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.all-deliveries__table th {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.all-deliveries__address {
+  cursor: pointer;
+  border-bottom: 1px dashed var(--border);
+}
+
+.all-deliveries__address:hover {
+  color: var(--primary-dark);
+}
+
+.all-deliveries__address-edit {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.all-deliveries__address-edit input {
+  flex: 1;
+  min-width: 12rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.all-deliveries__address-edit button {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.all-deliveries__cancel-btn {
+  background: var(--border) !important;
+  color: var(--text) !important;
+}
+
+.all-deliveries__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+
+.all-deliveries__unassign-btn {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid #b91c1c;
+  border-radius: 6px;
+  background: none;
+  color: #b91c1c;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.all-deliveries__unassign-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
