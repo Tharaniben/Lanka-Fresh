@@ -25,13 +25,14 @@ export type UserRole =
   | "BRANCH_MANAGER";
 
 /**
- * Fetches the current user's role from the LankaFresh backend.
- * Returns { role, isLoading, loading }.
- * Falls back to "CUSTOMER" if unauthenticated or on fetch failure.
+ * Fetches the current user's role and numeric user ID from the LankaFresh backend.
+ * Returns { role, userId, isLoading, loading }.
+ * Falls back to "CUSTOMER" / null if unauthenticated or on fetch failure.
  */
 export function useUserRole() {
   const { isLoaded, isSignedIn } = useAuth();
   const [role, setRole] = useState<string>("CUSTOMER");
+  const [userId, setUserId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -46,12 +47,15 @@ export function useUserRole() {
       .then((res) => {
         if (isMounted) {
           const userRole = res.data?.data?.role;
+          const id = res.data?.data?.id;
           setRole(userRole || "CUSTOMER");
+          setUserId(id ?? null);
         }
       })
       .catch(() => {
         if (isMounted) {
           setRole("CUSTOMER");
+          setUserId(null);
         }
       })
       .finally(() => {
@@ -69,6 +73,7 @@ export function useUserRole() {
 
   return {
     role,
+    userId,
     isLoading: effectiveLoading,
     loading: effectiveLoading,
   };
