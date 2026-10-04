@@ -44,6 +44,8 @@ export interface Order {
   createdAt: string;
   paymentTransactionId?: string | null;
   paymentStatus?: "SUCCESS" | "FAILED" | null;
+  customerName?: string | null;
+  customerEmail?: string | null;
 }
 
 export interface CheckoutPayload {
@@ -52,6 +54,15 @@ export interface CheckoutPayload {
   cardHolderName: string;
   expiryDate: string;
   cvv: string;
+}
+
+export interface Notification {
+  id: number;
+  orderId: number | null;
+  title: string;
+  message: string;
+  readStatus: boolean;
+  createdAt: string;
 }
 
 export interface ApiResponse<T> {

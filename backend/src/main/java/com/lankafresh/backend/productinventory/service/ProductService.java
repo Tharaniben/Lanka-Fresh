@@ -145,6 +145,15 @@ public class ProductService {
         stockRepository.save(stock);
     }
 
+    @Transactional
+    public void incrementStock(Long productId, int quantity) {
+        Stock stock = stockRepository.findByProductIdForUpdate(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Stock not found for product id: " + productId));
+        stock.setQuantity(stock.getQuantity() + quantity);
+        stockRepository.save(stock);
+    }
+
     private ProductResponseDto toDto(Product product) {
         Integer stockQty = stockRepository.findByProductId(product.getId())
                 .map(Stock::getQuantity)

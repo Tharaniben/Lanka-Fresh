@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import com.lankafresh.backend.productinventory.model.Stock;
+import com.lankafresh.backend.productinventory.repository.StockRepository;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,15 +31,18 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final StockRepository stockRepository;
     private final UserRepository userRepository;
 
     public CartService(CartRepository cartRepository,
                        CartItemRepository cartItemRepository,
                        ProductRepository productRepository,
+                       StockRepository stockRepository,
                        UserRepository userRepository) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
+        this.stockRepository = stockRepository;
         this.userRepository = userRepository;
     }
 
@@ -66,11 +71,24 @@ public class CartService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 
+        if (!product.isActive()) {
+            throw new IllegalStateException("Product '" + product.getName() + "' is currently inactive and cannot be added.");
+        }
+
+        int availableStock = stockRepository.findByProductId(productId)
+                .map(Stock::getQuantity)
+                .orElse(0);
+
         Optional<CartItem> existingItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), productId);
+
+        int totalDesired = quantity + existingItem.map(CartItem::getQuantity).orElse(0);
+        if (availableStock < totalDesired) {
+            throw new IllegalStateException("Insufficient stock for product '" + product.getName() + "'. Available: " + availableStock);
+        }
 
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + quantity);
+            item.setQuantity(totalDesired);
             cartItemRepository.save(item);
         } else {
             cartItemRepository.save(new CartItem(cart, product, quantity));
@@ -88,6 +106,19 @@ public class CartService {
 
         if (!item.getCart().getId().equals(cart.getId())) {
             throw new ResourceNotFoundException("Cart item not found with id: " + cartItemId);
+        }
+
+        if (quantity <= 0) {
+            cartItemRepository.deleteById(cartItemId);
+            return getCartForUser(userId);
+        }
+
+        int availableStock = stockRepository.findByProductId(item.getProduct().getId())
+                .map(Stock::getQuantity)
+                .orElse(0);
+
+        if (availableStock < quantity) {
+            throw new IllegalStateException("Insufficient stock for product '" + item.getProduct().getName() + "'. Available: " + availableStock);
         }
 
         item.setQuantity(quantity);

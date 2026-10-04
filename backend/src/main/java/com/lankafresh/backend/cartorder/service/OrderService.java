@@ -25,14 +25,16 @@ public class OrderService {
     private final ProductService productService;
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
+    private final NotificationService notificationService;
 
     public OrderService(OrderRepository orderRepository,
-                         CartItemRepository cartItemRepository,
-                         UserRepository userRepository,
-                         CartService cartService,
-                         ProductService productService,
-                         PaymentService paymentService,
-                         PaymentRepository paymentRepository) {
+                        CartItemRepository cartItemRepository,
+                        UserRepository userRepository,
+                        CartService cartService,
+                        ProductService productService,
+                        PaymentService paymentService,
+                        PaymentRepository paymentRepository,
+                        NotificationService notificationService) {
         this.orderRepository = orderRepository;
         this.cartItemRepository = cartItemRepository;
         this.userRepository = userRepository;
@@ -40,6 +42,7 @@ public class OrderService {
         this.productService = productService;
         this.paymentService = paymentService;
         this.paymentRepository = paymentRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -88,18 +91,78 @@ public class OrderService {
 
         cartItemRepository.deleteByCartId(cart.getId());
 
+        notificationService.createNotification(
+                user,
+                savedOrder.getId(),
+                "Order Placed",
+                "Your order #" + savedOrder.getId() + " of LKR " + savedOrder.getGrandTotal() + " has been placed successfully."
+        );
+
         return OrderResponseDto.from(savedOrder, savedPayment);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<OrderResponseDto> getOrderHistory(Long userId) {
         return orderRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
-                .map(OrderResponseDto::from)
+                .map(this::toDtoWithPayment)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<OrderResponseDto> getAllOrders() {
+        return orderRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(this::toDtoWithPayment)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponseDto getOrderById(Long userId, Long orderId, boolean isStaff) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+
+        if (!isStaff && !order.getUser().getId().equals(userId)) {
+            throw new ResourceNotFoundException("Order not found with id: " + orderId);
+        }
+
+        return toDtoWithPayment(order);
+    }
+
     @Transactional
-    public OrderResponseDto getOrderById(Long userId, Long orderId) {
+    public OrderResponseDto updateOrderStatus(Long orderId, OrderStatus newStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+
+        OrderStatus oldStatus = order.getStatus();
+        if (oldStatus == newStatus) {
+            return toDtoWithPayment(order);
+        }
+
+        if (oldStatus == OrderStatus.CANCELLED) {
+            throw new IllegalStateException("Cannot change status of a cancelled order");
+        }
+
+        // If transitioning to CANCELLED, restore inventory stock
+        if (newStatus == OrderStatus.CANCELLED) {
+            for (OrderItem item : order.getItems()) {
+                productService.incrementStock(item.getProduct().getId(), item.getQuantity());
+            }
+        }
+
+        order.setStatus(newStatus);
+        Order updatedOrder = orderRepository.save(order);
+
+        notificationService.createNotification(
+                order.getUser(),
+                order.getId(),
+                "Order Status Updated",
+                "Your order #" + order.getId() + " status is now " + newStatus + "."
+        );
+
+        return toDtoWithPayment(updatedOrder);
+    }
+
+    @Transactional
+    public OrderResponseDto cancelOrder(Long userId, Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
@@ -107,6 +170,29 @@ public class OrderService {
             throw new ResourceNotFoundException("Order not found with id: " + orderId);
         }
 
-        return OrderResponseDto.from(order);
+        if (order.getStatus() != OrderStatus.PLACED) {
+            throw new IllegalStateException("Only orders in PLACED status can be cancelled. Current status: " + order.getStatus());
+        }
+
+        for (OrderItem item : order.getItems()) {
+            productService.incrementStock(item.getProduct().getId(), item.getQuantity());
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        Order updatedOrder = orderRepository.save(order);
+
+        notificationService.createNotification(
+                order.getUser(),
+                order.getId(),
+                "Order Cancelled",
+                "Your order #" + order.getId() + " has been cancelled and items returned to stock."
+        );
+
+        return toDtoWithPayment(updatedOrder);
+    }
+
+    private OrderResponseDto toDtoWithPayment(Order order) {
+        Payment payment = paymentRepository.findByOrderId(order.getId()).orElse(null);
+        return OrderResponseDto.from(order, payment);
     }
 }
