@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth, useUser } from "@clerk/react";
-import { useUserRole } from "../auth/useUserRole";
-import { getAllCategories } from "../features/product-inventory/productService";
-import type { Category } from "../features/product-inventory/types";
 import "./HomePage.css";
 
 export interface CartItem {

@@ -1,0 +1,21 @@
+meta {
+  name: Update Order Status (Staff)
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/orders/1/status
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "status": "CONFIRMED"
+  }
+}
