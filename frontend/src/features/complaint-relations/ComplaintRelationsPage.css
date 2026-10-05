@@ -1,0 +1,48 @@
+.complaint-relations-page {
+  padding: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.complaint-relations-page__heading {
+  color: var(--text);
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.complaint-relations-page__status {
+  padding: 1.5rem;
+  color: var(--text-muted);
+}
+
+.complaint-relations-page__status--error {
+  color: #c92a2a;
+}
+
+.complaint-relations-page__tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.complaint-relations-page__tabs button {
+  background: none;
+  border: none;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.complaint-relations-page__tabs button.complaint-relations-page__tab--active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+.complaint-relations-page__content {
+  display: flex;
+  justify-content: center;
+}
