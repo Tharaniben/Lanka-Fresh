@@ -34,11 +34,22 @@ function StockTab() {
   }
 
   async function saveEdit(productId: number) {
+    const qty = parseInt(editQty, 10);
+    const threshold = parseInt(editThreshold, 10);
+    if (isNaN(qty) || qty < 0) {
+      alert("Quantity must be 0 or greater");
+      return;
+    }
+    if (isNaN(threshold) || threshold < 0) {
+      alert("Low stock threshold must be 0 or greater");
+      return;
+    }
+
     setSaving(true);
     try {
       await updateStock(productId, {
-        quantity: parseInt(editQty),
-        lowStockThreshold: parseInt(editThreshold),
+        quantity: qty,
+        lowStockThreshold: threshold,
       });
       setEditingId(null);
       load();
@@ -80,7 +91,17 @@ function StockTab() {
                     type="number"
                     min="0"
                     value={editQty}
-                    onChange={(e) => setEditQty(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "-" || e.key === "e" || e.key === "+") {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "" || (!val.includes("-") && Number(val) >= 0)) {
+                        setEditQty(val);
+                      }
+                    }}
                     className="inline-input"
                   />
                 ) : (
@@ -93,7 +114,17 @@ function StockTab() {
                     type="number"
                     min="0"
                     value={editThreshold}
-                    onChange={(e) => setEditThreshold(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "-" || e.key === "e" || e.key === "+") {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "" || (!val.includes("-") && Number(val) >= 0)) {
+                        setEditThreshold(val);
+                      }
+                    }}
                     className="inline-input"
                   />
                 ) : (

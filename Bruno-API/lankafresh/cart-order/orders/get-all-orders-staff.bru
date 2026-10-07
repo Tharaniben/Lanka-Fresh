@@ -1,0 +1,15 @@
+meta {
+  name: Get All Orders (Staff)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/orders/all
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

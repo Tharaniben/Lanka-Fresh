@@ -29,15 +29,37 @@ function ProductForm({ categories, product, onSubmit, onCancel }: ProductFormPro
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!categoryId) { setError("Please select a category"); return; }
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setError("Product name is required");
+      return;
+    }
+    if (!categoryId) {
+      setError("Please select a category");
+      return;
+    }
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+      setError("Price must be greater than zero");
+      return;
+    }
+    if (expiryDate && !product) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const chosen = new Date(expiryDate);
+      if (chosen < today) {
+        setError("Expiry date cannot be in the past for a new product");
+        return;
+      }
+    }
     setError("");
     setLoading(true);
     try {
       await onSubmit({
-        name,
-        description,
-        price: parseFloat(price),
-        imageUrl,
+        name: trimmedName,
+        description: description.trim(),
+        price: parsedPrice,
+        imageUrl: imageUrl.trim(),
         expiryDate: expiryDate || null,
         categoryId: parseInt(categoryId),
       });
@@ -60,6 +82,7 @@ function ProductForm({ categories, product, onSubmit, onCancel }: ProductFormPro
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            maxLength={150}
             required
           />
 
@@ -69,16 +92,27 @@ function ProductForm({ categories, product, onSubmit, onCancel }: ProductFormPro
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
+            maxLength={500}
           />
 
           <label htmlFor="pf-price">Price (LKR)</label>
           <input
             id="pf-price"
             type="number"
-            min="0"
+            min="0.01"
             step="0.01"
             value={price}
-            onChange={(e) => setPrice(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "-" || e.key === "e" || e.key === "+") {
+                e.preventDefault();
+              }
+            }}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "" || (!val.includes("-") && Number(val) >= 0)) {
+                setPrice(val);
+              }
+            }}
             required
           />
 
@@ -104,12 +138,14 @@ function ProductForm({ categories, product, onSubmit, onCancel }: ProductFormPro
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             placeholder="https://..."
+            maxLength={500}
           />
 
           <label htmlFor="pf-expiry">Expiry date (optional)</label>
           <input
             id="pf-expiry"
             type="date"
+            min={!product ? new Date().toISOString().split("T")[0] : undefined}
             value={expiryDate}
             onChange={(e) => setExpiryDate(e.target.value)}
           />

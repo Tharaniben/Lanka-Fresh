@@ -6,7 +6,8 @@ interface ProductCardProps {
   product: Product;
   isStaff: boolean;
   isSignedIn: boolean;
-  onAddToCart: (product: Product, quantity: number) => void;
+  isAddingToCart?: boolean;
+  onAddToCart: (product: Product, quantity: number) => Promise<void> | void;
   onEdit: (product: Product) => void;
   onDeactivate: (product: Product) => void;
   onReactivate: (product: Product) => void;
@@ -16,6 +17,7 @@ function ProductCard({
   product,
   isStaff,
   isSignedIn,
+  isAddingToCart = false,
   onAddToCart,
   onEdit,
   onDeactivate,
@@ -75,15 +77,36 @@ function ProductCard({
       {isSignedIn && !isStaff && product.active && !expiry.isExpired && inStock && (
         <div className="product-card__actions">
           <div className="product-card__quantity">
-            <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} disabled={quantity <= 1}>−</button>
-            <span>{quantity}</span>
             <button
+              type="button"
+              className="product-card__qty-btn"
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              disabled={quantity <= 1}
+              aria-label="Decrease quantity"
+            >
+              −
+            </button>
+            <span className="product-card__qty-value">{quantity}</span>
+            <button
+              type="button"
+              className="product-card__qty-btn"
               onClick={() => setQuantity((q) => Math.min(product.stockQuantity ?? 1, q + 1))}
               disabled={quantity >= (product.stockQuantity ?? 1)}
-            >+</button>
+              aria-label="Increase quantity"
+            >
+              +
+            </button>
           </div>
-          <button className="product-card__add-to-cart" onClick={() => onAddToCart(product, quantity)}>
-            Add to cart
+          <button
+            type="button"
+            className="product-card__add-to-cart"
+            onClick={async () => {
+              await onAddToCart(product, quantity);
+              setQuantity(1);
+            }}
+            disabled={isAddingToCart}
+          >
+            {isAddingToCart ? "Adding..." : "Add to cart"}
           </button>
         </div>
       )}

@@ -40,3 +40,6 @@ Thumbs.db
 *.log
 logs/
 run-backend.sh
+
+run-local.sh
+run-local.ps1
