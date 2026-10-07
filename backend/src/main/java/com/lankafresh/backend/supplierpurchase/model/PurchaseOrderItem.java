@@ -3,6 +3,8 @@ package com.lankafresh.backend.supplierpurchase.model;
 import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.lankafresh.backend.productinventory.model.Product;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +17,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PurchaseOrderItem {
 
+    private Integer acceptedQuantity;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,7 +41,18 @@ public class PurchaseOrderItem {
     @JsonIgnore
     private PurchaseOrder purchaseOrder;
 
-    @NotBlank(message = "Product name is required")
+    // The actual product being ordered - needed so that when the PO is
+    // marked RECEIVED, we know exactly which Stock record to update in the
+    // Product & Inventory module.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Product product;
+
+    // A snapshot of the product's name at the time this PO was created.
+    // Set automatically by the service (not sent by the client) - this way
+    // the PO's history stays readable even if the product is later renamed
+    // or deactivated in the Product & Inventory module.
     @Column(nullable = false)
     private String productName;
 

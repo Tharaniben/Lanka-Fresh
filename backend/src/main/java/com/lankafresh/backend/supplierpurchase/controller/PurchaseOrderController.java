@@ -75,4 +75,11 @@ public class PurchaseOrderController {
         purchaseOrderService.deletePurchaseOrder(id);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @PatchMapping("/{id}/confirm-stock")
+public ResponseEntity<ApiResponse<PurchaseOrder>> confirmStockReceipt(
+        @PathVariable Long id, @RequestBody(required = false) Map<Long, Integer> acceptedQuantitiesByItemId) {
+    PurchaseOrder updated = purchaseOrderService.confirmStockReceipt(id, acceptedQuantitiesByItemId);
+    return ResponseEntity.ok(ApiResponse.success(updated));
+}
 }
