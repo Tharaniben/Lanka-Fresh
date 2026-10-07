@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { deliveryService } from "../deliveryService";
 import type { Delivery } from "../types";
 import { useUserRole } from "../../../auth/useUserRole";
@@ -22,6 +23,7 @@ function stepIndex(status: Delivery["status"]): number {
 export default function TrackDelivery() {
   const { role } = useUserRole();
   const isManager = role === "BRANCH_MANAGER";
+  const [searchParams] = useSearchParams();
 
   const [orders, setOrders] = useState<Delivery[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState<string>("");
@@ -38,8 +40,12 @@ export default function TrackDelivery() {
       .then((data) => {
         setOrders(data ?? []);
         if (data && data.length > 0) {
-          setSelectedOrderId(String(data[0].orderId));
-          setDelivery(data[0]);
+          const orderIdParam = searchParams.get("orderId");
+          const target =
+            (orderIdParam && data.find((d) => String(d.orderId) === orderIdParam)) ||
+            data[0];
+          setSelectedOrderId(String(target.orderId));
+          setDelivery(target);
         }
       })
       .catch((err) => {
@@ -48,7 +54,7 @@ export default function TrackDelivery() {
       .finally(() => {
         setLoadingOrders(false);
       });
-  }, []);
+  }, [searchParams]);
 
   async function handleOrderSelect(orderIdStr: string) {
     setSelectedOrderId(orderIdStr);
