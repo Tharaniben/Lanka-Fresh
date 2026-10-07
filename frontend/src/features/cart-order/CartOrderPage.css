@@ -187,11 +187,31 @@
 .co-qty-btn {
   width: 28px;
   height: 28px;
+  padding: 0;
   border: 1px solid var(--border);
   background: #fff;
+  color: var(--text);
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+  font-size: 15px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.co-qty-btn:hover:not(:disabled) {
+  background: #f1f3f5;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.co-qty-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  color: var(--text-muted);
 }
 
 .co-qty {
@@ -441,6 +461,27 @@
 
 .co-cancel-btn:hover {
   background: #ffe3e3;
+}
+
+.co-track-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: #e6f4ea;
+  border: 1px solid #b2f2bb;
+  color: var(--primary-dark);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.co-track-link:hover {
+  background: #d3f9d8;
+  border-color: var(--primary);
+  color: #1e5c2a;
 }
 
 /* Staff Controls */

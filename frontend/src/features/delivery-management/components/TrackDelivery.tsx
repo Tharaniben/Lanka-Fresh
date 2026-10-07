@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { deliveryService } from "../deliveryService";
 import type { Delivery } from "../types";
 import StatusBadge from "./StatusBadge";
@@ -21,11 +22,43 @@ function stepIndex(status: Delivery["status"]): number {
 // delivery. Lookup mode (Delivery ID vs Order ID) matches the two GET
 // endpoints the backend actually exposes (PRD 5.4).
 export default function TrackDelivery() {
+  const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<"delivery" | "order">("order");
   const [idInput, setIdInput] = useState("");
   const [delivery, setDelivery] = useState<Delivery | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const orderIdParam = searchParams.get("orderId");
+    const deliveryIdParam = searchParams.get("deliveryId");
+
+    if (orderIdParam) {
+      setMode("order");
+      setIdInput(orderIdParam);
+      const id = Number(orderIdParam);
+      if (id > 0) {
+        setLoading(true);
+        deliveryService
+          .getDeliveryByOrderId(id)
+          .then((res) => setDelivery(res))
+          .catch((err) => setError(err instanceof Error ? err.message : "Delivery not found"))
+          .finally(() => setLoading(false));
+      }
+    } else if (deliveryIdParam) {
+      setMode("delivery");
+      setIdInput(deliveryIdParam);
+      const id = Number(deliveryIdParam);
+      if (id > 0) {
+        setLoading(true);
+        deliveryService
+          .getDeliveryById(id)
+          .then((res) => setDelivery(res))
+          .catch((err) => setError(err instanceof Error ? err.message : "Delivery not found"))
+          .finally(() => setLoading(false));
+      }
+    }
+  }, [searchParams]);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
