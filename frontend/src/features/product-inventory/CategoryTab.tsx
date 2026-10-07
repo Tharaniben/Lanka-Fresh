@@ -15,14 +15,15 @@ function CategoryTab({ categories, onRefresh }: CategoryTabProps) {
   const [error, setError] = useState("");
 
   async function handleSubmit() {
-    if (!name.trim()) { setError("Name is required"); return; }
+    const trimmedName = name.trim();
+    if (!trimmedName) { setError("Name is required"); return; }
     setError("");
     setLoading(true);
     try {
       if (editing) {
-        await updateCategory(editing.id, { name, description });
+        await updateCategory(editing.id, { name: trimmedName, description: description.trim() });
       } else {
-        await createCategory({ name, description });
+        await createCategory({ name: trimmedName, description: description.trim() });
       }
       setName("");
       setDescription("");
@@ -75,6 +76,7 @@ function CategoryTab({ categories, onRefresh }: CategoryTabProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Fruits"
+          maxLength={100}
         />
         <label htmlFor="cat-desc">Description</label>
         <input
@@ -83,6 +85,7 @@ function CategoryTab({ categories, onRefresh }: CategoryTabProps) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Optional"
+          maxLength={300}
         />
         {error && <p className="field-error">{error}</p>}
         <div className="form-actions">
