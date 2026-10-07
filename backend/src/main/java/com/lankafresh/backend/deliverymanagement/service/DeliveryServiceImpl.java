@@ -121,12 +121,10 @@ public class DeliveryServiceImpl implements DeliveryService {
                     "Delivery " + deliveryId + " cannot be (re)assigned from status " + status);
         }
 
-        if (status == DeliveryStatus.ASSIGNED) {
-            assignmentRepository.findByDeliveryAndActiveTrue(delivery)
-                    .ifPresent(existing -> {
-                        existing.cancel();
-                        assignmentRepository.save(existing);
-                    });
+        List<DeliveryAssignment> activeAssignments = assignmentRepository.findByDeliveryAndActiveTrue(delivery);
+        for (DeliveryAssignment existing : activeAssignments) {
+            existing.cancel();
+            assignmentRepository.save(existing);
         }
 
         DeliveryAssignment assignment = new DeliveryAssignment(delivery, agentUserId);
@@ -173,7 +171,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     public void cancelAssignment(Long deliveryId) {
         Delivery delivery = findDeliveryOrThrow(deliveryId);
         assignmentRepository.findByDeliveryAndActiveTrue(delivery)
-                .ifPresent(assignmentRepository::delete);
+                .forEach(assignmentRepository::delete);
 
         // This is the module's "Delete" — on DeliveryAssignment, not on
         // Delivery. Send the delivery back to ORDER_PLACED so it reappears
@@ -203,7 +201,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     private DeliveryResponseDto toDto(Delivery delivery) {
-        Long assignedAgentId = assignmentRepository.findByDeliveryAndActiveTrue(delivery)
+        Long assignedAgentId = assignmentRepository.findFirstByDeliveryAndActiveTrueOrderByIdDesc(delivery)
                 .map(DeliveryAssignment::getAgentUserId)
                 .orElse(null);
 

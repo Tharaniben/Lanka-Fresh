@@ -9,7 +9,9 @@ import java.util.Optional;
 
 public interface DeliveryAssignmentRepository extends JpaRepository<DeliveryAssignment, Long> {
 
-    Optional<DeliveryAssignment> findByDeliveryAndActiveTrue(Delivery delivery);
+    Optional<DeliveryAssignment> findFirstByDeliveryAndActiveTrueOrderByIdDesc(Delivery delivery);
+
+    List<DeliveryAssignment> findByDeliveryAndActiveTrue(Delivery delivery);
 
     List<DeliveryAssignment> findByAgentUserIdAndActiveTrue(Long agentUserId);
 
