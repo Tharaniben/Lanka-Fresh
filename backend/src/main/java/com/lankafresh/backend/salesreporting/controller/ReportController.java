@@ -23,6 +23,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/reports")
+@PreAuthorize("hasRole('BRANCH_MANAGER')")
 @RequiredArgsConstructor
 public class ReportController extends BaseController {
 

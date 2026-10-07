@@ -40,6 +40,8 @@ public class SecurityConfig {
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Allow root URL access without JWT authentication
+                .requestMatchers("/").permitAll()
                 // Allow CORS preflight OPTIONS requests without authentication
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
@@ -49,8 +51,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/inventory/products/category/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/inventory/categories").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/inventory/categories/*").permitAll()
-                // Allow read-only reports for authorized frontend app
-                .requestMatchers(HttpMethod.GET, "/api/v1/reports/**").permitAll()
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
@@ -65,7 +65,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        config.setAllowedOrigins(List.of(
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:5175",
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:5174"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

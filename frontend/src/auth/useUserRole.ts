@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth, useUser } from "@clerk/react";
+import { useAuth } from "@clerk/react";
 import api from "../services/api";
 
 interface UserInfo {
@@ -25,81 +25,55 @@ export type UserRole =
   | "BRANCH_MANAGER";
 
 /**
- * Fetches the current user's role from the LankaFresh backend.
- * Returns { role, isLoading, loading }.
- * Falls back to "CUSTOMER" if unauthenticated or on fetch failure.
+ * Fetches the current user's role and numeric user ID from the LankaFresh backend.
+ * Returns { role, userId, isLoading, loading }.
+ * Falls back to "CUSTOMER" / null if unauthenticated or on fetch failure.
  */
 export function useUserRole() {
-  const { isLoaded, isSignedIn, getToken } = useAuth();
-  const { user } = useUser();
-  const [role, setRole] = useState<string>(() => {
-    return localStorage.getItem("lankafresh_active_role") || "CUSTOMER";
-  });
+  const { isLoaded, isSignedIn } = useAuth();
+  const [role, setRole] = useState<string>("CUSTOMER");
+  const [userId, setUserId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) {
-      setIsLoading(false);
       return;
     }
 
     let isMounted = true;
-    setIsLoading(true);
 
-    async function fetchRole() {
-      // Automatic privilege for project owner / branch manager email
-      const userEmail = user?.primaryEmailAddress?.emailAddress || "";
-      if (userEmail.toLowerCase() === "binukadil2005@gmail.com") {
-        setRole("BRANCH_MANAGER");
-        localStorage.setItem("lankafresh_active_role", "BRANCH_MANAGER");
-      }
-
-      // Check Clerk metadata
-      const clerkMetaRole = (user?.publicMetadata?.role as string) || (user?.unsafeMetadata?.role as string);
-      if (clerkMetaRole && isMounted) {
-        setRole(clerkMetaRole);
-      }
-
-      // Check localStorage override
-      const cached = localStorage.getItem("lankafresh_active_role");
-      if (cached && isMounted) {
-        setRole(cached);
-      }
-
-      try {
-        const token = await getToken();
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers.Authorization = `Bearer ${token}`;
-        }
-        const res = await api.get<ApiResponse<UserInfo>>("/users/me", { headers });
+    api
+      .get<ApiResponse<UserInfo>>("/users/me")
+      .then((res) => {
         if (isMounted) {
           const userRole = res.data?.data?.role;
-          if (userRole) {
-            setRole(userRole);
-            localStorage.setItem("lankafresh_active_role", userRole);
-          }
+          const id = res.data?.data?.id;
+          setRole(userRole || "CUSTOMER");
+          setUserId(id ?? null);
         }
-      } catch (err) {
-        console.error("Failed to fetch user role from /users/me:", err);
-      } finally {
+      })
+      .catch(() => {
+        if (isMounted) {
+          setRole("CUSTOMER");
+          setUserId(null);
+        }
+      })
+      .finally(() => {
         if (isMounted) {
           setIsLoading(false);
         }
-      }
-    }
-
-    fetchRole();
+      });
 
     return () => {
       isMounted = false;
     };
-  }, [isLoaded, isSignedIn, getToken, user]);
+  }, [isLoaded, isSignedIn]);
 
   const effectiveLoading = !isLoaded ? true : isSignedIn ? isLoading : false;
 
   return {
     role,
+    userId,
     isLoading: effectiveLoading,
     loading: effectiveLoading,
   };
