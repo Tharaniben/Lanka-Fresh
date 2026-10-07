@@ -1,0 +1,15 @@
+meta {
+  name: Get Saved Reports
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/reports/saved
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

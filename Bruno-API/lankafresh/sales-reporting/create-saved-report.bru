@@ -1,0 +1,30 @@
+meta {
+  name: Create Saved Report
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/reports/saved
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Q3 Sales Summary",
+    "reportType": "SALES",
+    "dateRangeStart": "2026-07-01",
+    "dateRangeEnd": "2026-09-30",
+    "parameters": "{\"range\":\"daily\"}",
+    "summaryJson": "{\"totalSales\":150000,\"orderCount\":42}"
+  }
+}
