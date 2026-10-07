@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { Link } from "react-router-dom";
 import type { CartItem as CartItemType, CartSummary, Order, OrderStatus, Notification } from "./types";
 import {
   getMyCart,
@@ -112,7 +113,9 @@ function CartOrderPage() {
 
   // Polling ref for near real-time updates as per PRD Section 4.7
   const tabRef = useRef(tab);
-  tabRef.current = tab;
+  useEffect(() => {
+    tabRef.current = tab;
+  }, [tab]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -354,9 +357,17 @@ function CartOrderPage() {
           {lastOrder.paymentTransactionId && (
             <>Payment ref: <code>{lastOrder.paymentTransactionId}</code> (Status: {lastOrder.paymentStatus}).{" "}</>
           )}
-          <button className="co-link-btn" onClick={() => openTab("orders")}>
-            View my orders
-          </button>
+          <div style={{ marginTop: "8px", display: "flex", gap: "10px", alignItems: "center" }}>
+            <Link
+              to={`/delivery?orderId=${lastOrder.id}`}
+              className="co-track-link"
+            >
+              Track Delivery 🚚
+            </Link>
+            <button className="co-link-btn" onClick={() => openTab("orders")}>
+              View my orders
+            </button>
+          </div>
         </div>
       )}
 
@@ -400,14 +411,24 @@ function CartOrderPage() {
                       </p>
                     </div>
                     <div className="co-item-controls">
-                      <button className="co-qty-btn" onClick={() => handleDecrement(item)}>
+                      <button
+                        type="button"
+                        className="co-qty-btn"
+                        onClick={() => handleDecrement(item)}
+                        aria-label="Decrease quantity"
+                      >
                         -
                       </button>
                       <span className="co-qty">{item.quantity}</span>
-                      <button className="co-qty-btn" onClick={() => handleIncrement(item)}>
+                      <button
+                        type="button"
+                        className="co-qty-btn"
+                        onClick={() => handleIncrement(item)}
+                        aria-label="Increase quantity"
+                      >
                         +
                       </button>
-                      <button className="co-remove-btn" onClick={() => handleRemove(item)}>
+                      <button type="button" className="co-remove-btn" onClick={() => handleRemove(item)}>
                         Remove
                       </button>
                     </div>
@@ -579,14 +600,22 @@ function CartOrderPage() {
                     <strong>{money(order.grandTotal)}</strong>
                   </p>
 
-                  {order.status === "PLACED" && (
-                    <button
-                      className="co-cancel-btn"
-                      onClick={() => handleCancelOrder(order.id)}
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <Link
+                      to={`/delivery?orderId=${order.id}`}
+                      className="co-track-link"
                     >
-                      Cancel Order
-                    </button>
-                  )}
+                      Track Delivery 🚚
+                    </Link>
+                    {order.status === "PLACED" && (
+                      <button
+                        className="co-cancel-btn"
+                        onClick={() => handleCancelOrder(order.id)}
+                      >
+                        Cancel Order
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))
