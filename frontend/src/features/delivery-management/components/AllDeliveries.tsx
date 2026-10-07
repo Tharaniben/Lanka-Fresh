@@ -106,7 +106,10 @@ export default function AllDeliveries() {
                 <td>{d.assignedAgentId ?? "—"}</td>
                 <td className="all-deliveries__actions">
                   {(d.status === "ORDER_PLACED" || d.status === "ASSIGNED") && (
-                    <AssignDeliveryForm deliveryId={d.id} onAssigned={refetch} />
+                    <AssignDeliveryForm
+                      deliveryId={d.id}
+                      onAssigned={refetch}
+                    />
                   )}
                   {d.assignedAgentId !== null && d.status === "ASSIGNED" && (
                     <button

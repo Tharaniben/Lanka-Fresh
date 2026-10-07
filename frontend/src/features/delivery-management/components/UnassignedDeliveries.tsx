@@ -42,7 +42,10 @@ export default function UnassignedDeliveries() {
                   <StatusBadge status={d.status} />
                 </td>
                 <td>
-                  <AssignDeliveryForm deliveryId={d.id} onAssigned={refetch} />
+                  <AssignDeliveryForm
+                    deliveryId={d.id}
+                    onAssigned={refetch}
+                  />
                 </td>
               </tr>
             ))}

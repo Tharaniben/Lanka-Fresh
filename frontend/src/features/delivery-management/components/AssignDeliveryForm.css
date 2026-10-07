@@ -4,12 +4,16 @@
   gap: 0.5rem;
 }
 
+.assign-delivery-form select,
 .assign-delivery-form input {
-  width: 8rem;
+  min-width: 13rem;
+  max-width: 18rem;
   padding: 0.35rem 0.5rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--text);
+  background: var(--bg, #ffffff);
+  font-size: 0.875rem;
 }
 
 .assign-delivery-form button {
@@ -26,9 +30,16 @@
   background: var(--primary-dark);
 }
 
-.assign-delivery-form button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.assign-delivery-form button.assign-delivery-form__me-btn {
+  background: var(--bg-muted, #f3f4f6);
+  color: var(--text, #374151);
+  border: 1px solid var(--border, #d1d5db);
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.assign-delivery-form button.assign-delivery-form__me-btn:hover:not(:disabled) {
+  background: var(--bg-subtle, #e5e7eb);
 }
 
 .assign-delivery-form__error {

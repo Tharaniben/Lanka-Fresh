@@ -104,6 +104,19 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<DeliveryResponseDto> getDeliveriesForCustomer(Long customerUserId) {
+        try {
+            return deliveryRepository.findDeliveriesByCustomerUserId(customerUserId)
+                    .stream()
+                    .map(this::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    @Override
     @Transactional
     public DeliveryAssignmentResponseDto assignDelivery(Long deliveryId, Long agentUserId) {
         Delivery delivery = findDeliveryOrThrow(deliveryId);

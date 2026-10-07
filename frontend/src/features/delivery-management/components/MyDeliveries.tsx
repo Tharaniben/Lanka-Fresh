@@ -44,9 +44,18 @@ export default function MyDeliveries({ agentUserId }: { agentUserId: number }) {
 
   return (
     <div className="my-deliveries">
-      <h2>My Deliveries</h2>
+      <div className="my-deliveries__header">
+        <h2>My Deliveries</h2>
+        <span className="my-deliveries__agent-badge">Agent #{agentUserId}</span>
+      </div>
+      <p className="my-deliveries__subtitle">
+        Deliveries assigned to you. Advance the status as you pick up and deliver orders.
+      </p>
+
       {deliveries.length === 0 ? (
-        <p className="my-deliveries__empty">No active deliveries assigned to you.</p>
+        <p className="my-deliveries__empty">
+          No deliveries currently assigned to you (Agent #{agentUserId}). To assign an order to yourself, use Agent ID #{agentUserId} in the &quot;Unassigned&quot; or &quot;All Deliveries&quot; tab.
+        </p>
       ) : (
         <ul className="my-deliveries__list">
           {deliveries.map((d) => {

@@ -55,4 +55,6 @@ public interface DeliveryService {
      * 5.4's entity table.
      */
     void cancelAssignment(Long deliveryId);
+
+    List<DeliveryResponseDto> getDeliveriesForCustomer(Long customerUserId);
 }
