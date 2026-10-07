@@ -8,6 +8,7 @@ import com.lankafresh.backend.config.ResourceNotFoundException;
 import com.lankafresh.backend.productinventory.service.ProductService;
 import com.lankafresh.backend.user.model.User;
 import com.lankafresh.backend.user.repository.UserRepository;
+import com.lankafresh.backend.deliverymanagement.service.DeliveryService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class OrderService {
     private final CartService cartService;
     private final ProductService productService;
     private final PaymentService paymentService;
+    private final DeliveryService deliveryService;
     private final PaymentRepository paymentRepository;
     private final NotificationService notificationService;
 
@@ -33,6 +35,7 @@ public class OrderService {
                         CartService cartService,
                         ProductService productService,
                         PaymentService paymentService,
+                        DeliveryService deliveryService,
                         PaymentRepository paymentRepository,
                         NotificationService notificationService) {
         this.orderRepository = orderRepository;
@@ -41,10 +44,10 @@ public class OrderService {
         this.cartService = cartService;
         this.productService = productService;
         this.paymentService = paymentService;
+        this.deliveryService = deliveryService;
         this.paymentRepository = paymentRepository;
         this.notificationService = notificationService;
     }
-
     @Transactional
     public OrderResponseDto checkout(Long userId, CheckoutRequestDto body) {
         Cart cart = cartService.getOrCreateCart(userId);
@@ -86,6 +89,7 @@ public class OrderService {
         }
 
         Order savedOrder = orderRepository.save(order);
+        deliveryService.createDeliveryForOrder(savedOrder.getId(), body.getDeliveryAddress());
         payment.setOrder(savedOrder);
         Payment savedPayment = paymentRepository.save(payment);
 
