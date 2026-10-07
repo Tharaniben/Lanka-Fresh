@@ -2,8 +2,8 @@ package com.lankafresh.backend.supplierpurchase.model;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.lankafresh.backend.productinventory.model.Product;
 
 import jakarta.persistence.Column;
@@ -46,7 +46,7 @@ public class PurchaseOrderItem {
     // Product & Inventory module.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // Prevents client from sending product data in the request
     private Product product;
 
     // A snapshot of the product's name at the time this PO was created.

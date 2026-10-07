@@ -1,8 +1,8 @@
 // Thin wrapper functions around the shared `api` axios client (which already
-// attaches the Clerk bearer token — see src/services/api.ts). Every backend
-// response is wrapped in { success, data, message } (see ApiResponse.java on
-// the backend) — these functions unwrap that envelope so the rest of the
-// module just works with plain Supplier / PurchaseOrder objects.
+// attaches the Clerk bearer token and has baseURL = http://localhost:8080/api/v1
+// - see src/services/api.ts, so paths here never include a leading /v1).
+// Every backend response is wrapped in { success, data, message } (see
+// ApiResponse.java on the backend) - these functions unwrap that envelope.
 
 import api from "../../services/api";
 import type {
@@ -11,6 +11,9 @@ import type {
   PurchaseOrder,
   PurchaseOrderInput,
   PurchaseOrderStatus,
+  Product,
+  LowStockItem,
+  NearExpiryItem,
 } from "./types";
 
 interface ApiEnvelope<T> {
@@ -37,18 +40,16 @@ export function getErrorMessage(err: unknown): string {
 // ---- Suppliers ----
 
 export interface SupplierSearchParams {
-  search?: string; // matches supplier name
+  search?: string;
   contactPerson?: string;
-  dateFrom?: string; // "YYYY-MM-DD"
-  dateTo?: string; // "YYYY-MM-DD"
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 export async function getSuppliers(
   params?: SupplierSearchParams,
 ): Promise<Supplier[]> {
-  const res = await api.get<ApiEnvelope<Supplier[]>>("/suppliers", {
-    params,
-  });
+  const res = await api.get<ApiEnvelope<Supplier[]>>("/suppliers", { params });
   return res.data.data;
 }
 
@@ -61,10 +62,7 @@ export async function updateSupplier(
   id: number,
   input: SupplierInput,
 ): Promise<Supplier> {
-  const res = await api.patch<ApiEnvelope<Supplier>>(
-    `/suppliers/${id}`,
-    input,
-  );
+  const res = await api.patch<ApiEnvelope<Supplier>>(`/suppliers/${id}`, input);
   return res.data.data;
 }
 
@@ -78,22 +76,19 @@ export interface PurchaseOrderSearchParams {
   supplierId?: number;
   status?: PurchaseOrderStatus | "";
   contactPerson?: string;
-  dateFrom?: string; // "YYYY-MM-DD"
-  dateTo?: string; // "YYYY-MM-DD"
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 export async function getPurchaseOrders(
   params?: PurchaseOrderSearchParams,
 ): Promise<PurchaseOrder[]> {
-  // Don't send an empty-string status - the backend treats a *missing*
-  // param as "no filter", but an empty string would fail PurchaseOrderStatus.valueOf(...).
   const cleaned: PurchaseOrderSearchParams = { ...params };
   if (!cleaned.status) delete cleaned.status;
 
-  const res = await api.get<ApiEnvelope<PurchaseOrder[]>>(
-    "/purchase-orders",
-    { params: cleaned },
-  );
+  const res = await api.get<ApiEnvelope<PurchaseOrder[]>>("/purchase-orders", {
+    params: cleaned,
+  });
   return res.data.data;
 }
 
@@ -118,6 +113,47 @@ export async function updatePurchaseOrderStatus(
   return res.data.data;
 }
 
+// Confirms a RECEIVED order's stock arrival. Pass an empty object to accept
+// every item at its full ordered quantity, or key specific item ids to
+// override the accepted amount for that item (e.g. { 15: 18 } if 2 units
+// of item 15 were damaged).
+export async function confirmStockReceipt(
+  id: number,
+  acceptedQuantitiesByItemId: Record<number, number>,
+): Promise<PurchaseOrder> {
+  const res = await api.patch<ApiEnvelope<PurchaseOrder>>(
+    `/purchase-orders/${id}/confirm-stock`,
+    acceptedQuantitiesByItemId,
+  );
+  return res.data.data;
+}
+
 export async function deletePurchaseOrder(id: number): Promise<void> {
   await api.delete(`/purchase-orders/${id}`);
+}
+
+// ---- Product & Inventory (read-only, from the other module) ----
+
+export async function getProducts(): Promise<Product[]> {
+  const res = await api.get<ApiEnvelope<Product[]>>("/inventory/products");
+  return res.data.data;
+}
+
+// ---- Restock alerts ----
+
+export async function getLowStockItems(): Promise<LowStockItem[]> {
+  const res = await api.get<ApiEnvelope<LowStockItem[]>>(
+    "/inventory/stock/low-stock",
+  );
+  return res.data.data;
+}
+
+export async function getNearExpiryItems(
+  days: number = 7,
+): Promise<NearExpiryItem[]> {
+  const res = await api.get<ApiEnvelope<NearExpiryItem[]>>(
+    "/purchase-orders/alerts/near-expiry",
+    { params: { days } },
+  );
+  return res.data.data;
 }

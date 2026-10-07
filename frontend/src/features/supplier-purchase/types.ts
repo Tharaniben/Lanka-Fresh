@@ -1,7 +1,13 @@
-// Types for this module only. Shapes here mirror the backend entities in
-// backend/.../supplierpurchase/model — keep them in sync if those change.
+// Types for this module. Shapes here mirror the backend entities/DTOs in
+// backend/.../supplierpurchase and the Product & Inventory module it reads
+// from - keep them in sync if those change.
 
-export type PurchaseOrderStatus = "DRAFT" | "SENT" | "RECEIVED" | "CANCELLED";
+export type PurchaseOrderStatus =
+  | "DRAFT"
+  | "SENT"
+  | "RECEIVED"
+  | "COMPLETED"
+  | "CANCELLED";
 
 export interface Supplier {
   id: number;
@@ -14,16 +20,25 @@ export interface Supplier {
   createdAt?: string;
 }
 
-// What we send when creating/editing a supplier — no id (server assigns it)
-// and no createdAt (server sets it).
 export type SupplierInput = Omit<Supplier, "id" | "createdAt">;
+
+// A product as returned by Product & Inventory's own API
+// (GET /inventory/products) - only the fields this module actually uses.
+export interface Product {
+  id: number;
+  name: string;
+  price: number;
+  stockQuantity: number | null;
+}
 
 export interface PurchaseOrderItem {
   id?: number;
-  productName: string;
+  product: { id: number; name?: string };
+  productName: string; // snapshot taken at creation time, set by the backend
   quantity: number;
+  acceptedQuantity?: number | null; // set once staff confirms stock receipt
   unitCost: number;
-  subtotal?: number; // calculated by the backend, read-only
+  subtotal?: number;
 }
 
 export interface PurchaseOrder {
@@ -37,10 +52,28 @@ export interface PurchaseOrder {
   items: PurchaseOrderItem[];
 }
 
-// Shape the backend expects on create — just enough to identify the
-// supplier (by id) plus the line items, matching PurchaseOrderService.
+// Shape the backend expects on create - a productId per item, not free text.
 export interface PurchaseOrderInput {
   supplier: { id: number };
   expectedDeliveryDate?: string;
-  items: { productName: string; quantity: number; unitCost: number }[];
+  items: { product: { id: number }; quantity: number; unitCost: number }[];
+}
+
+// ---- Restock alerts ----
+
+// Matches StockResponseDto from Product & Inventory's low-stock endpoint.
+export interface LowStockItem {
+  id: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  lowStockThreshold: number;
+  lowStock: boolean;
+}
+
+// Matches NearExpiryProductDto from this module's own alerts endpoint.
+export interface NearExpiryItem {
+  id: number;
+  name: string;
+  expiryDate: string;
 }
