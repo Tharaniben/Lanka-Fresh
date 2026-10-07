@@ -1,0 +1,15 @@
+meta {
+  name: Get My Cart
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/cart
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
