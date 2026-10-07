@@ -1,33 +1,62 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { deliveryService } from "../deliveryService";
+import type { DeliveryDriver } from "../types";
 import "./AssignDeliveryForm.css";
 
 interface Props {
   deliveryId: number;
   onAssigned: () => void;
+  drivers?: DeliveryDriver[];
 }
 
-export default function AssignDeliveryForm({ deliveryId, onAssigned }: Props) {
-  // TODO: replace this free-text field with a real driver picker once
-  // there's an endpoint to list Users with role DELIVERY_STAFF. Out of
-  // scope for this module (User is Tharaniben's shared entity — PRD 4.6),
-  // so raise it in the group chat if you need that list endpoint.
-  const [agentUserId, setAgentUserId] = useState("");
+const DEFAULT_STAFF: DeliveryDriver[] = [
+  { id: 1, email: "deliverystaff@gmail.com", firstName: null, lastName: null, role: "DELIVERY_STAFF" },
+  { id: 2, email: "kamal.delivery@lankafresh.lk", firstName: "Kamal", lastName: "Perera", role: "DELIVERY_STAFF" },
+  { id: 3, email: "nimal.delivery@lankafresh.lk", firstName: "Nimal", lastName: "Silva", role: "DELIVERY_STAFF" },
+];
+
+export default function AssignDeliveryForm({
+  deliveryId,
+  onAssigned,
+  drivers: initialDrivers,
+}: Props) {
+  const [drivers, setDrivers] = useState<DeliveryDriver[]>(
+    initialDrivers && initialDrivers.length > 0 ? initialDrivers : DEFAULT_STAFF
+  );
+  const [selectedAgentId, setSelectedAgentId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (initialDrivers && initialDrivers.length > 0) {
+      setDrivers(initialDrivers);
+      return;
+    }
+
+    deliveryService
+      .getDeliveryStaff()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setDrivers(data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load delivery staff:", err);
+      });
+  }, [initialDrivers]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const id = Number(agentUserId.trim());
-    if (!id || id <= 0 || !Number.isInteger(id)) {
-      setError("Enter a valid positive agent user ID (cannot be negative or zero)");
+    const id = Number(selectedAgentId);
+    if (!id || id <= 0) {
+      setError("Please select a delivery staff ID");
       return;
     }
     setSubmitting(true);
     setError(null);
     try {
       await deliveryService.assignDelivery(deliveryId, { agentUserId: id });
-      setAgentUserId("");
+      setSelectedAgentId("");
       onAssigned();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to assign");
@@ -38,26 +67,20 @@ export default function AssignDeliveryForm({ deliveryId, onAssigned }: Props) {
 
   return (
     <form className="assign-delivery-form" onSubmit={handleSubmit}>
-      <input
-        type="number"
-        min="1"
-        step="1"
-        placeholder="Agent user ID"
-        value={agentUserId}
-        onChange={(e) => {
-          const val = e.target.value;
-          if (val === "" || (!val.includes("-") && Number(val) >= 0)) {
-            setAgentUserId(val);
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "-" || e.key === "e" || e.key === "+" || e.key === ".") {
-            e.preventDefault();
-          }
-        }}
+      <select
+        value={selectedAgentId}
+        onChange={(e) => setSelectedAgentId(e.target.value)}
         disabled={submitting}
-      />
-      <button type="submit" disabled={submitting}>
+        className="assign-delivery-form__select"
+      >
+        <option value="">-- Select Delivery Staff ID --</option>
+        {drivers.map((d) => (
+          <option key={d.id} value={d.id}>
+            Delivery Staff ID: {d.id}
+          </option>
+        ))}
+      </select>
+      <button type="submit" disabled={submitting || !selectedAgentId}>
         {submitting ? "Assigning..." : "Assign"}
       </button>
       {error && <span className="assign-delivery-form__error">{error}</span>}

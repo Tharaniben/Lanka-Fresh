@@ -7,6 +7,9 @@ import com.lankafresh.backend.deliverymanagement.dto.DeliveryResponseDto;
 import com.lankafresh.backend.deliverymanagement.dto.UpdateDeliveryAddressRequestDto;
 import com.lankafresh.backend.deliverymanagement.dto.UpdateDeliveryStatusRequestDto;
 import com.lankafresh.backend.deliverymanagement.service.DeliveryService;
+import com.lankafresh.backend.user.model.Role;
+import com.lankafresh.backend.user.model.User;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,17 +31,34 @@ public class DeliveryController {
         this.deliveryService = deliveryService;
     }
 
-    /** Master registry — backs the "All Deliveries" staff view. */
+    /** Master registry — backs the "All Deliveries" manager view. */
     @GetMapping
-    @PreAuthorize("hasAnyRole('DELIVERY_STAFF', 'BRANCH_MANAGER')")
+    @PreAuthorize("hasRole('BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<List<DeliveryResponseDto>>> getAllDeliveries() {
         List<DeliveryResponseDto> deliveries = deliveryService.getAllDeliveries();
         return ResponseEntity.ok(ApiResponse.success(deliveries));
     }
 
+    /** Accessible by customers and staff to populate the tracking order dropdown.
+     * Managers get every customer's order.
+     * Customers only get their own orders.
+     */
+    @GetMapping("/trackable-orders")
+    public ResponseEntity<ApiResponse<List<DeliveryResponseDto>>> getTrackableOrders(
+            HttpServletRequest request) {
+        User currentUser = (User) request.getAttribute("currentUser");
+        if (currentUser != null && currentUser.getRole() == Role.CUSTOMER) {
+            List<DeliveryResponseDto> customerOrders = deliveryService.getDeliveriesForCustomer(currentUser.getId());
+            return ResponseEntity.ok(ApiResponse.success(customerOrders));
+        }
+        // Branch Manager (and staff) get every customer's order
+        List<DeliveryResponseDto> allDeliveries = deliveryService.getAllDeliveries();
+        return ResponseEntity.ok(ApiResponse.success(allDeliveries));
+    }
+
     /** Deliveries waiting to be picked up. */
     @GetMapping("/unassigned")
-    @PreAuthorize("hasAnyRole('DELIVERY_STAFF', 'BRANCH_MANAGER')")
+    @PreAuthorize("hasRole('BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<List<DeliveryResponseDto>>> getUnassignedDeliveries() {
         List<DeliveryResponseDto> deliveries = deliveryService.getUnassignedDeliveries();
         return ResponseEntity.ok(ApiResponse.success(deliveries));
@@ -75,9 +95,9 @@ public class DeliveryController {
         }
     }
 
-    /** Assign delivery to an agent. */
+    /** Assign delivery to an agent (Branch Manager only). */
     @PostMapping("/{id}/assign")
-    @PreAuthorize("hasAnyRole('DELIVERY_STAFF', 'BRANCH_MANAGER')")
+    @PreAuthorize("hasRole('BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<DeliveryAssignmentResponseDto>> assignDelivery(
             @PathVariable Long id,
             @Valid @RequestBody AssignDeliveryRequestDto request) {
@@ -107,9 +127,9 @@ public class DeliveryController {
         }
     }
 
-    /** Unassign agent / cancel assignment before pickup. */
+    /** Unassign agent / cancel assignment before pickup (Branch Manager only). */
     @DeleteMapping("/{id}/assignment")
-    @PreAuthorize("hasAnyRole('DELIVERY_STAFF', 'BRANCH_MANAGER')")
+    @PreAuthorize("hasRole('BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<Void>> cancelAssignment(@PathVariable Long id) {
         try {
             deliveryService.cancelAssignment(id);
@@ -119,9 +139,9 @@ public class DeliveryController {
         }
     }
 
-    /** Edit delivery destination address. */
+    /** Edit delivery destination address (Branch Manager only). */
     @PatchMapping("/{id}/address")
-    @PreAuthorize("hasAnyRole('DELIVERY_STAFF', 'BRANCH_MANAGER')")
+    @PreAuthorize("hasRole('BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<DeliveryResponseDto>> updateAddress(
             @PathVariable Long id,
             @Valid @RequestBody UpdateDeliveryAddressRequestDto request) {

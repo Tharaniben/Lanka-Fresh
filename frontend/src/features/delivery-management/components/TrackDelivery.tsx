@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { deliveryService } from "../deliveryService";
 import type { Delivery } from "../types";
+import { useUserRole } from "../../../auth/useUserRole";
 import StatusBadge from "./StatusBadge";
 import "./TrackDelivery.css";
 
@@ -18,66 +19,58 @@ function stepIndex(status: Delivery["status"]): number {
 }
 
 // Available to both Customer and Staff, per the RBAC plan — the default
-// landing view. Customers look up their own order; staff can look up any
-// delivery. Lookup mode (Delivery ID vs Order ID) matches the two GET
-// endpoints the backend actually exposes (PRD 5.4).
+// landing view. Manager sees every customer's order; Customer sees their own orders.
 export default function TrackDelivery() {
+  const { role } = useUserRole();
+  const isManager = role === "BRANCH_MANAGER";
   const [searchParams] = useSearchParams();
-  const [mode, setMode] = useState<"delivery" | "order">("order");
-  const [idInput, setIdInput] = useState("");
+
+  const [orders, setOrders] = useState<Delivery[]>([]);
+  const [selectedOrderId, setSelectedOrderId] = useState<string>("");
+  const [loadingOrders, setLoadingOrders] = useState(true);
+
   const [delivery, setDelivery] = useState<Delivery | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Load available orders for dropdown on mount
   useEffect(() => {
-    const orderIdParam = searchParams.get("orderId");
-    const deliveryIdParam = searchParams.get("deliveryId");
-
-    if (orderIdParam) {
-      setMode("order");
-      setIdInput(orderIdParam);
-      const id = Number(orderIdParam);
-      if (id > 0) {
-        setLoading(true);
-        deliveryService
-          .getDeliveryByOrderId(id)
-          .then((res) => setDelivery(res))
-          .catch((err) => setError(err instanceof Error ? err.message : "Delivery not found"))
-          .finally(() => setLoading(false));
-      }
-    } else if (deliveryIdParam) {
-      setMode("delivery");
-      setIdInput(deliveryIdParam);
-      const id = Number(deliveryIdParam);
-      if (id > 0) {
-        setLoading(true);
-        deliveryService
-          .getDeliveryById(id)
-          .then((res) => setDelivery(res))
-          .catch((err) => setError(err instanceof Error ? err.message : "Delivery not found"))
-          .finally(() => setLoading(false));
-      }
-    }
+    deliveryService
+      .getTrackableOrders()
+      .then((data) => {
+        setOrders(data ?? []);
+        if (data && data.length > 0) {
+          const orderIdParam = searchParams.get("orderId");
+          const target =
+            (orderIdParam && data.find((d) => String(d.orderId) === orderIdParam)) ||
+            data[0];
+          setSelectedOrderId(String(target.orderId));
+          setDelivery(target);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load orders for tracking:", err);
+      })
+      .finally(() => {
+        setLoadingOrders(false);
+      });
   }, [searchParams]);
 
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const id = Number(idInput);
-    if (!id || id <= 0 || !Number.isInteger(id)) {
-      setError(`Please enter a valid positive ${mode === "order" ? "Order ID" : "Delivery ID"}`);
+  async function handleOrderSelect(orderIdStr: string) {
+    setSelectedOrderId(orderIdStr);
+    if (!orderIdStr) {
+      setDelivery(null);
       return;
     }
+    const orderId = Number(orderIdStr);
     setLoading(true);
     setError(null);
-    setDelivery(null);
     try {
-      const result =
-        mode === "order"
-          ? await deliveryService.getDeliveryByOrderId(id)
-          : await deliveryService.getDeliveryById(id);
+      const result = await deliveryService.getDeliveryByOrderId(orderId);
       setDelivery(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Delivery not found");
+      setDelivery(null);
     } finally {
       setLoading(false);
     }
@@ -87,33 +80,45 @@ export default function TrackDelivery() {
     <div className="track-delivery">
       <h2>Track a Delivery</h2>
 
-      <form className="track-delivery__search" onSubmit={handleSearch}>
-        <select value={mode} onChange={(e) => setMode(e.target.value as "delivery" | "order")}>
-          <option value="order">By Order ID</option>
-          <option value="delivery">By Delivery ID</option>
-        </select>
-        <input
-          type="number"
-          min="1"
-          step="1"
-          placeholder={mode === "order" ? "Order ID" : "Delivery ID"}
-          value={idInput}
-          onChange={(e) => {
-            const val = e.target.value;
-            if (val === "" || (!val.includes("-") && Number(val) >= 0)) {
-              setIdInput(val);
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "-" || e.key === "e" || e.key === "+" || e.key === ".") {
-              e.preventDefault();
-            }
-          }}
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? "Searching..." : "Track"}
-        </button>
-      </form>
+      {/* Customer / Manager order dropdown */}
+      <div className="track-delivery__picker">
+        <label htmlFor="customer-order-select">
+          <strong>
+            {isManager
+              ? "Select Customer Order to Track (All Orders — Manager View):"
+              : "Select Your Order to Track:"}
+          </strong>
+        </label>
+        <div className="track-delivery__picker-row">
+          <select
+            id="customer-order-select"
+            value={selectedOrderId}
+            onChange={(e) => handleOrderSelect(e.target.value)}
+            disabled={loadingOrders || loading}
+            className="track-delivery__order-dropdown"
+          >
+            <option value="">
+              {loadingOrders
+                ? "Loading orders..."
+                : isManager
+                ? "-- Select Any Customer Order to Track --"
+                : orders.length === 0
+                ? "-- No Orders Found For Your Account --"
+                : "-- Select Your Order to Track --"}
+            </option>
+            {orders.map((o) => (
+              <option key={o.orderId} value={o.orderId}>
+                Order #{o.orderId} — {o.deliveryAddress} ({o.status})
+              </option>
+            ))}
+          </select>
+        </div>
+        {!isManager && orders.length === 0 && !loadingOrders && (
+          <p className="track-delivery__no-orders-hint">
+            No orders found under your customer account yet.
+          </p>
+        )}
+      </div>
 
       {error && <p className="track-delivery__error">{error}</p>}
 

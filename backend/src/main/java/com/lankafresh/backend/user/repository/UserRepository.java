@@ -1,9 +1,11 @@
 package com.lankafresh.backend.user.repository;
 
+import com.lankafresh.backend.user.model.Role;
 import com.lankafresh.backend.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,4 +16,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * User row that matches the Clerk JWT's 'sub' claim.
      */
     Optional<User> findByClerkId(String clerkId);
+
+    List<User> findByRole(Role role);
 }

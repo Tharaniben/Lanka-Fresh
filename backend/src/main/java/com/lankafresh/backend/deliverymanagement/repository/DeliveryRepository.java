@@ -15,4 +15,10 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
 
     // "Unassigned" deliveries for GET /api/v1/deliveries/unassigned
     List<Delivery> findByStatusOrderByCreatedAtAsc(DeliveryStatus status);
+
+    @org.springframework.data.jpa.repository.Query(
+        value = "SELECT d.* FROM deliveries d JOIN orders o ON d.order_id = o.id WHERE o.user_id = :userId ORDER BY d.created_at DESC",
+        nativeQuery = true
+    )
+    List<Delivery> findDeliveriesByCustomerUserId(@org.springframework.data.repository.query.Param("userId") Long userId);
 }

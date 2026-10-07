@@ -42,6 +42,12 @@ public class UserController extends BaseController {
         return ResponseEntity.ok(ApiResponse.success(userService.getAllUsers()));
     }
 
+    @GetMapping("/delivery-staff")
+    @PreAuthorize("hasAnyRole('BRANCH_MANAGER', 'DELIVERY_STAFF')")
+    public ResponseEntity<ApiResponse<List<UserResponseDto>>> getDeliveryStaff() {
+        return ResponseEntity.ok(ApiResponse.success(userService.getDeliveryStaff()));
+    }
+
     @PatchMapping("/{id}/role")
     @PreAuthorize("hasRole('BRANCH_MANAGER')")
     public ResponseEntity<ApiResponse<UserResponseDto>> updateUserRole(

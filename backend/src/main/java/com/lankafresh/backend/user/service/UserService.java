@@ -65,6 +65,17 @@ public class UserService {
     }
 
     /**
+     * All users with role DELIVERY_STAFF.
+     */
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> getDeliveryStaff() {
+        return userRepository.findByRole(Role.DELIVERY_STAFF)
+                .stream()
+                .map(UserResponseDto::from)
+                .toList();
+    }
+
+    /**
      * Updates the role of a user record.
      */
     @Transactional

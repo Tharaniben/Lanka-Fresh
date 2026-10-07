@@ -15,6 +15,7 @@ import type {
   AssignDeliveryRequest,
   Delivery,
   DeliveryAssignment,
+  DeliveryDriver,
   UpdateDeliveryAddressRequest,
   UpdateDeliveryStatusRequest,
 } from "./types";
@@ -96,6 +97,16 @@ export const deliveryService = {
       `${BASE}/${deliveryId}/address`,
       payload
     );
+    return unwrap(res.data);
+  },
+
+  async getDeliveryStaff(): Promise<DeliveryDriver[]> {
+    const res = await api.get<ApiEnvelope<DeliveryDriver[]>>("/users/delivery-staff");
+    return unwrap(res.data);
+  },
+
+  async getTrackableOrders(): Promise<Delivery[]> {
+    const res = await api.get<ApiEnvelope<Delivery[]>>(`${BASE}/trackable-orders`);
     return unwrap(res.data);
   },
 };

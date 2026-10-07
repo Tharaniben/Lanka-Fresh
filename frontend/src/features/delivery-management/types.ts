@@ -9,6 +9,14 @@ export type DeliveryStatus =
   | "DELIVERED"
   | "CANCELLED";
 
+export interface DeliveryDriver {
+  id: number;
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  role: string;
+}
+
 export interface Delivery {
   id: number;
   orderId: number;
