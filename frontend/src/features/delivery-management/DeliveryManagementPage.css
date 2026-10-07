@@ -1,0 +1,81 @@
+.delivery-management-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.delivery-management-page__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.delivery-management-page__top h1 {
+  color: var(--text);
+  margin: 0;
+}
+
+.delivery-management-page__view-switch {
+  display: flex;
+  gap: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.2rem;
+}
+
+.delivery-management-page__view-switch button {
+  padding: 0.3rem 0.8rem;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delivery-management-page__view-switch button.active {
+  background: var(--primary);
+  color: white;
+}
+
+.delivery-management-page__tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.delivery-management-page__tabs button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.delivery-management-page__tabs button.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.delivery-management-page__agent-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-width: 20rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.delivery-management-page__agent-picker input {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}

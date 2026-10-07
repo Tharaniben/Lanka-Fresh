@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@clerk/react";
 import { useUserRole } from "../../auth/useUserRole";
 import type { Category, Product } from "./types";
@@ -13,6 +13,7 @@ import {
   updateProduct,
   deactivateProduct,
 } from "./productService";
+import { addItemToCart } from "../cart-order/cartService";
 import ProductCard from "./ProductCard";
 import ProductForm from "./ProductForm";
 import CategoryTab from "./CategoryTab";
@@ -24,6 +25,7 @@ type Tab = "products" | "categories" | "stock";
 type StaffFilter = "all" | "expiring_soon" | "expired" | "inactive";
 
 function ProductInventoryPage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { isSignedIn, isLoaded: isAuthLoaded } = useAuth();
   const { role: userRole, loading: roleLoading } = useUserRole();
@@ -38,13 +40,34 @@ function ProductInventoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [staffFilter, setStaffFilter] = useState<StaffFilter>("all");
+  const [addingProductId, setAddingProductId] = useState<number | null>(null);
+  const [cartFeedback, setCartFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [cats, prods] = await Promise.all([
+        getAllCategories(),
+        isStaff ? getAllProducts() : getAllActiveProducts(),
+      ]);
+      setCategories(cats);
+      setProducts(prods);
+    } catch (err) {
+      console.error("Failed to load products/categories:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [isStaff]);
 
   // Fetch only once after auth and user role are resolved
   useEffect(() => {
     if (isAuthLoaded && !roleLoading) {
       loadData();
     }
-  }, [isAuthLoaded, roleLoading, isStaff]);
+  }, [isAuthLoaded, roleLoading, loadData]);
 
   // Sync category from URL search params (e.g. /products?category=Fruits or /products?category=1)
   useEffect(() => {
@@ -68,22 +91,6 @@ function ProductInventoryPage() {
       }
     }
   }, [searchParams, categories]);
-
-  async function loadData() {
-    setLoading(true);
-    try {
-      const [cats, prods] = await Promise.all([
-        getAllCategories(),
-        isStaff ? getAllProducts() : getAllActiveProducts(),
-      ]);
-      setCategories(cats);
-      setProducts(prods);
-    } catch (err) {
-      console.error("Failed to load products/categories:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function handleCategoryChange(newCat: string) {
     setSelectedCategory(newCat);
@@ -183,9 +190,33 @@ function ProductInventoryPage() {
     loadData();
   }
 
-  function handleAddToCart(product: Product, quantity: number) {
-    console.log("Add to cart:", product.name, "x", quantity);
-    alert(`Added ${quantity}x ${product.name} to cart`);
+  async function handleAddToCart(product: Product, quantity: number) {
+    if (!isSignedIn) {
+      navigate("/sign-in");
+      return;
+    }
+    setAddingProductId(product.id);
+    setCartFeedback(null);
+    try {
+      await addItemToCart(product.id, quantity);
+      setCartFeedback({
+        type: "success",
+        message: `Added ${quantity}x "${product.name}" to your cart!`,
+      });
+      setTimeout(() => {
+        setCartFeedback((curr) => (curr?.message.includes(product.name) ? null : curr));
+      }, 5000);
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        (err instanceof Error ? err.message : "Failed to add item to cart.");
+      setCartFeedback({
+        type: "error",
+        message: msg,
+      });
+    } finally {
+      setAddingProductId(null);
+    }
   }
 
   return (
@@ -236,6 +267,17 @@ function ProductInventoryPage() {
               </button>
             )}
           </div>
+
+          {cartFeedback && (
+            <div className={`pi-cart-banner pi-cart-banner--${cartFeedback.type}`}>
+              <span>{cartFeedback.message}</span>
+              {cartFeedback.type === "success" && (
+                <Link to="/cart" className="pi-cart-banner__link">
+                  View Cart →
+                </Link>
+              )}
+            </div>
+          )}
 
           {/* Staff Expiry Alert Banners with toggle buttons */}
           {isStaff && (expiredCount > 0 || expiringSoonCount > 0) && (
@@ -345,6 +387,7 @@ function ProductInventoryPage() {
                   product={product}
                   isStaff={isStaff}
                   isSignedIn={Boolean(isSignedIn)}
+                  isAddingToCart={addingProductId === product.id}
                   onAddToCart={handleAddToCart}
                   onEdit={(p) => { setEditingProduct(p); setShowForm(true); }}
                   onDeactivate={handleDeactivate}

@@ -1,0 +1,135 @@
+.track-delivery h2 {
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+
+.track-delivery__search {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.track-delivery__search select,
+.track-delivery__search input {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+}
+
+.track-delivery__search input {
+  flex: 1;
+  max-width: 14rem;
+}
+
+.track-delivery__search button {
+  padding: 0.4rem 0.9rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.track-delivery__search button:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.track-delivery__search button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.track-delivery__error {
+  color: #b91c1c;
+}
+
+.track-delivery__result {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  background: var(--bg);
+}
+
+.track-delivery__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.track-delivery__header h3 {
+  margin: 0;
+  color: var(--text);
+}
+
+.track-delivery__address {
+  color: var(--text-muted);
+  margin: 0.4rem 0 1rem;
+}
+
+/* 4-step progress tracker: Placed -> Assigned -> Out for Delivery -> Delivered */
+.track-delivery__progress {
+  display: flex;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.track-delivery__step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.track-delivery__step::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: -50%;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+
+.track-delivery__step:first-child::before {
+  content: none;
+}
+
+.track-delivery__dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  z-index: 1;
+  margin-bottom: 0.4rem;
+}
+
+.track-delivery__step--done {
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.track-delivery__step--done .track-delivery__dot {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.track-delivery__step--done::before {
+  background: var(--primary);
+}
+
+.track-delivery__coords {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.track-delivery__mock-note {
+  font-style: italic;
+}

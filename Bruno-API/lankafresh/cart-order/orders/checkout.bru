@@ -1,0 +1,25 @@
+meta {
+  name: Checkout Order (Success)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/orders/checkout
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "deliveryAddress": "No. 45, Temple Road, Colombo 03",
+    "cardNumber": "4111222233334444",
+    "cardHolderName": "John Doe",
+    "expiryDate": "12/28",
+    "cvv": "123"
+  }
+}
