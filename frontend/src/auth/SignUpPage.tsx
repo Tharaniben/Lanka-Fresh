@@ -1,113 +1,49 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, Navigate, Link } from "react-router-dom";
-import { useAuth, useSignIn } from "@clerk/react";
+import { useAuth, useSignUp } from "@clerk/react";
 
-function SignInPage() {
-  const { signIn, errors, fetchStatus } = useSignIn();
+function SignUpPage() {
+  const { signUp, errors, fetchStatus } = useSignUp();
   const { isSignedIn } = useAuth();
   const navigate = useNavigate();
 
-  const [identifier, setIdentifier] = useState("");
+  const [username, setUsername] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [customError, setCustomError] = useState<string | null>(null);
-
-  // New: device/client-trust verification step
-  const [needsTrustCode, setNeedsTrustCode] = useState(false);
-  const [trustCode, setTrustCode] = useState("");
-  const [verifying, setVerifying] = useState(false);
 
   if (isSignedIn) return <Navigate to="/" replace />;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    setPasswordError(null);
     setCustomError(null);
-    const { error } = await signIn.password({ identifier, password });
 
-    if (error) {
-      console.error(JSON.stringify(error, null, 2));
-      setCustomError(error.message || "Invalid credentials. Please check your username/email and password.");
+    if (password !== confirmPassword) {
+      setPasswordError("Passwords do not match");
       return;
     }
 
-    if (signIn.status === "complete") {
-      await signIn.finalize({
+    if (password.length < 8) {
+      setPasswordError("Password must be at least 8 characters long");
+      return;
+    }
+
+    const { error } = await signUp.create({ username, emailAddress, password });
+    if (error) {
+      console.error(JSON.stringify(error, null, 2));
+      setCustomError(error.message || "Failed to create account. Please check your details.");
+      return;
+    }
+    if (signUp.status === "complete") {
+      await signUp.finalize({
         navigate: async () => {
           navigate("/");
         },
       });
-    } else if (signIn.status === "needs_client_trust") {
-      // New device/browser -- Clerk wants an email code before finishing sign-in.
-      const emailFactor = signIn.supportedSecondFactors?.find(
-        (f) => f.strategy === "email_code"
-      );
-      if (emailFactor) {
-        await signIn.mfa.sendEmailCode();
-        setNeedsTrustCode(true);
-      } else {
-        setCustomError("This device needs verification, but no email code option is available.");
-      }
-    } else {
-      console.error("Sign-in not complete:", signIn.status, signIn);
-      setCustomError("Couldn't complete sign-in. Please try again.");
     }
-  }
-
-  async function handleVerifyTrustCode(e: FormEvent) {
-    e.preventDefault();
-    setCustomError(null);
-    setVerifying(true);
-    try {
-      await signIn.mfa.verifyEmailCode({ code: trustCode });
-      if (signIn.status === "complete") {
-        await signIn.finalize({
-          navigate: async () => {
-            navigate("/");
-          },
-        });
-      } else {
-        setCustomError("Invalid or expired code. Please try again.");
-      }
-    } finally {
-      setVerifying(false);
-    }
-  }
-
-  if (needsTrustCode) {
-    return (
-      <div className="auth-container">
-        <div className="auth-card">
-          <div className="auth-header">
-            <div className="auth-brand">
-              <span className="auth-brand-icon">🌿</span>
-              <span className="auth-brand-name">LankaFresh</span>
-            </div>
-            <h1>Verify it's you</h1>
-            <p>We sent a code to {identifier}</p>
-          </div>
-
-          {customError && <div className="auth-alert-error">{customError}</div>}
-
-          <form onSubmit={handleVerifyTrustCode} className="auth-form">
-            <div className="form-group">
-              <label htmlFor="trustCode">Verification code</label>
-              <input
-                id="trustCode"
-                type="text"
-                placeholder="123456"
-                value={trustCode}
-                onChange={(e) => setTrustCode(e.target.value)}
-                required
-                autoFocus
-              />
-            </div>
-
-            <button type="submit" className="auth-btn-primary" disabled={verifying}>
-              {verifying ? "Verifying..." : "Verify"}
-            </button>
-          </form>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -118,42 +54,59 @@ function SignInPage() {
             <span className="auth-brand-icon">🌿</span>
             <span className="auth-brand-name">LankaFresh</span>
           </div>
-          <h1>Welcome Back</h1>
-          <p>Sign in to your supermarket account</p>
+          <h1>Create your account</h1>
+          <p>Join LankaFresh to start shopping</p>
         </div>
 
         {customError && <div className="auth-alert-error">{customError}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="identifier">Username or email</label>
+            <label htmlFor="username">Username</label>
             <input
-              id="identifier"
+              id="username"
               type="text"
-              placeholder="name@example.com or username"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="Choose a username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               autoFocus
             />
-            {errors.fields.identifier && (
-              <p className="field-error">{errors.fields.identifier.message}</p>
+            {errors.fields.username && (
+              <p className="field-error">{errors.fields.username.message}</p>
             )}
           </div>
 
           <div className="form-group">
-            <div className="label-row">
-              <label htmlFor="password">Password</label>
-              <Link to="/forgot-password" className="auth-helper-link">
-                Forgot password?
-              </Link>
-            </div>
+            <label htmlFor="email">Email address</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="name@example.com"
+              value={emailAddress}
+              onChange={(e) => setEmailAddress(e.target.value)}
+              required
+            />
+            {errors.fields.emailAddress && (
+              <p className="field-error">{errors.fields.emailAddress.message}</p>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
             <input
               id="password"
               type="password"
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (confirmPassword && e.target.value !== confirmPassword) {
+                  setPasswordError("Passwords do not match");
+                } else {
+                  setPasswordError(null);
+                }
+              }}
               required
             />
             {errors.fields.password && (
@@ -161,19 +114,39 @@ function SignInPage() {
             )}
           </div>
 
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm password</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (password && e.target.value !== password) {
+                  setPasswordError("Passwords do not match");
+                } else {
+                  setPasswordError(null);
+                }
+              }}
+              required
+            />
+            {passwordError && <p className="field-error">{passwordError}</p>}
+          </div>
+
           <button
             type="submit"
             className="auth-btn-primary"
             disabled={fetchStatus === "fetching"}
           >
-            {fetchStatus === "fetching" ? "Signing in..." : "Sign In"}
+            {fetchStatus === "fetching" ? "Creating account..." : "Create Account"}
           </button>
         </form>
 
         <div className="auth-footer">
-          <span>Don't have an account?</span>{" "}
-          <Link to="/sign-up" className="auth-inline-link">
-            Sign up
+          <span>Already have an account?</span>{" "}
+          <Link to="/sign-in" className="auth-inline-link">
+            Sign in
           </Link>
         </div>
       </div>
@@ -181,4 +154,4 @@ function SignInPage() {
   );
 }
 
-export default SignInPage;
+export default SignUpPage;
