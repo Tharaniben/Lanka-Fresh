@@ -1,0 +1,19 @@
+meta {
+  name: Get Best Sellers
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/reports/bestsellers?limit=10
+  body: none
+  auth: bearer
+}
+
+params:query {
+  limit: 10
+}
+
+auth:bearer {
+  token: {{token}}
+}

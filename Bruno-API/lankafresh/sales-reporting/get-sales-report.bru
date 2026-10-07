@@ -1,0 +1,19 @@
+meta {
+  name: Get Sales Report
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/reports/sales?range=daily
+  body: none
+  auth: bearer
+}
+
+params:query {
+  range: daily
+}
+
+auth:bearer {
+  token: {{token}}
+}

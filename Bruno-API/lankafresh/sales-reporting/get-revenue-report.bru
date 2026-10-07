@@ -1,0 +1,19 @@
+meta {
+  name: Get Revenue Report
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/reports/revenue?range=daily
+  body: none
+  auth: bearer
+}
+
+params:query {
+  range: daily
+}
+
+auth:bearer {
+  token: {{token}}
+}
