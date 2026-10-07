@@ -30,13 +30,18 @@ function ProductForm({ categories, product, onSubmit, onCancel }: ProductFormPro
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!categoryId) { setError("Please select a category"); return; }
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+      setError("Price must be greater than zero");
+      return;
+    }
     setError("");
     setLoading(true);
     try {
       await onSubmit({
         name,
         description,
-        price: parseFloat(price),
+        price: parsedPrice,
         imageUrl,
         expiryDate: expiryDate || null,
         categoryId: parseInt(categoryId),
@@ -75,10 +80,20 @@ function ProductForm({ categories, product, onSubmit, onCancel }: ProductFormPro
           <input
             id="pf-price"
             type="number"
-            min="0"
+            min="0.01"
             step="0.01"
             value={price}
-            onChange={(e) => setPrice(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "-" || e.key === "e" || e.key === "+") {
+                e.preventDefault();
+              }
+            }}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "" || (!val.includes("-") && Number(val) >= 0)) {
+                setPrice(val);
+              }
+            }}
             required
           />
 
