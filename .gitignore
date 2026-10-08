@@ -43,3 +43,4 @@ run-backend.sh
 
 run-local.sh
 run-local.ps1
+run-backend.ps1
